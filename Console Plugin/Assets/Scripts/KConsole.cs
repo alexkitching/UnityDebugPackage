@@ -47,7 +47,7 @@ namespace KConsole
             if (s_Initialised == false)
                 return false;
 
-            bool bExists = s_Tree.StringExists(a_string);
+            bool bExists = s_Tree.StringExists(a_string.ToLowerInvariant());
 
             return bExists;
         }
@@ -57,7 +57,7 @@ namespace KConsole
             if (s_Initialised == false)
                 return false;
 
-            bool bSuccess = s_Tree.Insert(a_command.Name, out int ID);
+            bool bSuccess = s_Tree.Insert(a_command.Name.ToLowerInvariant(), out int ID);
 
             if (bSuccess)
             {
@@ -74,7 +74,7 @@ namespace KConsole
 
             ICommand command = null;
 
-            KTrie.ILookupQuery query = s_Tree.LookupBestMatch(a_string);
+            KTrie.ILookupQuery query = s_Tree.LookupBestMatch(a_string.ToLowerInvariant());
             if (query.IsValid)
             {
                 command = s_RegisteredCommands[query.ID];
@@ -88,7 +88,7 @@ namespace KConsole
                 return false;
 
             List<KTrie.ILookupQuery> matchList = new List<KTrie.ILookupQuery>(a_list.Capacity);
-            int matchCount = s_Tree.LookupBestMatches(a_string, ref matchList);
+            int matchCount = s_Tree.LookupBestMatches(a_string.ToLowerInvariant(), ref matchList);
 
             for (int i = 0; i < matchCount; ++i)
             {

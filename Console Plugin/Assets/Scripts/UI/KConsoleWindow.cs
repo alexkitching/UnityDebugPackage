@@ -10,7 +10,7 @@ namespace KConsole
 {
     public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     {
-
+        #region TestCommands
         public class KConsoleTestCommandChildren : ICommand
         {
             string ICommand.Name { get; set; } = "Children";
@@ -173,9 +173,10 @@ namespace KConsole
                 return "Success";
             }
         }
+        #endregion
 
-        [SerializeField]
-        private TMPro.TextMeshProUGUI _inputText;
+        [SerializeField] 
+        private TMPro.TextMeshProUGUI _inputText = null;
 
         [SerializeField]
         private Color _predictionTextColour = Color.gray;
@@ -186,7 +187,7 @@ namespace KConsole
         private ICommand _currentCommand = null;
 
         [SerializeField] 
-        private TMPro.TMP_InputField _inputField;
+        private TMPro.TMP_InputField _inputField = null;
 
         [SerializeField]
         private bool _rememberLastCommandOnOpen = true;
@@ -229,7 +230,7 @@ namespace KConsole
             predictionGO.transform.SetAsLastSibling();
             predictionGO.name = "TXT_Prediction";
             _predictionText = predictionGO.GetComponent<TMPro.TextMeshProUGUI>();
-            _predictionText.text = "Test";
+            SetPredictionText("Test");
             _predictionTransform = (RectTransform)predictionGO.transform;
             _predictionText.color = _predictionTextColour;
             UpdatePredictionObjectOffset();
@@ -237,7 +238,13 @@ namespace KConsole
 
         private void UpdatePredictionObjectOffset()
         {
-            Vector2 position = new Vector2(_inputText.textBounds.size.x, _predictionTransform.anchoredPosition.y);
+            Vector2 position = new Vector2(0f,_predictionTransform.anchoredPosition.y);
+
+            if (string.IsNullOrEmpty(_inputField.text) == false)
+            {
+                position = new Vector2(_inputText.textBounds.size.x, _predictionTransform.anchoredPosition.y);
+            }
+                
             _predictionTransform.anchoredPosition = position;
         }
 
@@ -253,7 +260,21 @@ namespace KConsole
             }
             else if (Input.GetKeyDown(KeyCode.Tab))
             {
-                // TODO Auto Complete
+                if (_currentCommand != null && 
+                    _inputField.text.Length != _currentCommand.Name.Length)
+                {
+                    // Complete Command
+                    string completedCommand = _inputField.text + _predictionText.text;
+                    _inputField.SetTextWithoutNotify(completedCommand);
+                    _inputField.caretPosition = completedCommand.Length;
+                    OnInputStringChanged();
+
+                    // Add Extra Spacing
+                    completedCommand += ' ';
+                    _inputField.SetTextWithoutNotify(completedCommand);
+                    _inputField.caretPosition = completedCommand.Length;
+                    OnInputStringChanged();
+                }
             }
         }
 
@@ -262,6 +283,10 @@ namespace KConsole
             if (_rememberLastCommandOnOpen)
             {
                 _inputField.SetTextWithoutNotify(_lastCommandName);
+                if (string.IsNullOrEmpty(_lastCommandName))
+                {
+                    SetPredictionText("Type a Command...");
+                }
             }
             else
             {
@@ -298,7 +323,7 @@ namespace KConsole
             if (string.IsNullOrWhiteSpace(input))
             {
                 _currentCommand = null;
-                _predictionText.text = "Type a Command...";
+                SetPredictionText("Type a Command...");
                 return;
             }
 
@@ -313,23 +338,46 @@ namespace KConsole
                     ICommand firstMatch = _predictionCommands[0];
                     string predictionText = firstMatch.Name.Substring(input.Length, firstMatch.Name.Length - input.Length);
                     Debug.Log(predictionText);
-                    _predictionText.text = predictionText;
+                    SetPredictionText(predictionText);
                     _currentCommand = firstMatch;
                 }
                 else
                 {
                     _currentCommand = null;
-                    _predictionText.text = string.Empty;
+                    SetPredictionText(string.Empty);
                 }
                 _predictionCommands.Clear();
-            } 
+            }
+
+            bool bCommandComplete = _currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text);
+            int ArgCount = inputStrings.Length;
+            bool bArgEmpty = inputStrings.Length <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
+
+            Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + ArgCount + "ArgEmpty: " + bArgEmpty);
             
-            if(_currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text))// Arguments
+            if(bCommandComplete)// Arguments
             {
                 string argName = _currentCommand.GetArgName(inputStrings.Length - 1);
                 argName = argName.Insert(0, " ");
-                _predictionText.text = argName;
+                SetPredictionText(argName);
             }
+            else if(ArgCount > 1)
+            {
+                int ArgIndex = ArgCount - 1;
+                bArgEmpty = string.IsNullOrWhiteSpace(inputStrings[ArgIndex]);
+
+                if (bArgEmpty == false)
+                {
+                    ++ArgIndex;
+                }
+
+                Debug.Assert(_currentCommand != null, "Current Command is null!");
+
+                string argName = _currentCommand.GetArgName(ArgIndex - 1);
+                argName = argName.Insert(0, " ");
+                SetPredictionText(argName);
+            }
+
         }
 
         public void OnInputEndEdit()
@@ -369,7 +417,10 @@ namespace KConsole
         }
         #endregion
 
-
+        private void SetPredictionText(string a_value)
+        {
+            _predictionText.text = a_value;
+        }
 
     }
 }

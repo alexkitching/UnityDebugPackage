@@ -58,16 +58,15 @@ public partial class KTrie
 
     public bool StringExists(string a_string)
     {
-        KTrieNode node = LookupCompleteMatch(m_Root, a_string.ToLowerInvariant());
+        KTrieNode node = LookupCompleteMatch(m_Root, a_string);
         return node != null;
     }
 
     public bool Insert(string a_string, out int a_id)
     {
         a_id = KTrieNode.InvalidCompleteID;
-        string lowerString = a_string.ToLowerInvariant();
 
-        LookupQuery query = LookupMatchForInsert(m_Root, lowerString);
+        LookupQuery query = LookupMatchForInsert(m_Root, a_string);
 
         if (query.IsValid == false)
         {
@@ -116,7 +115,7 @@ public partial class KTrie
         }
 
         a_id = GetNewCompleteID;
-        string postFix = lowerString.Substring(query.TotalMatchingChars, lowerString.Length - query.TotalMatchingChars);
+        string postFix = a_string.Substring(query.TotalMatchingChars, a_string.Length - query.TotalMatchingChars);
         query.Node.Children.Add(new KTrieNode(postFix, query.Node, query.Node.Depth + postFix.Length, a_id));
         
         return true;
