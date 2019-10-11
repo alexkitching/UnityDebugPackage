@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -10,218 +12,67 @@ namespace KConsole
 {
     public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     {
-        #region TestCommands
-        public class KConsoleTestCommandChildren : ICommand
-        {
-            string ICommand.Name { get; set; } = "Children";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                switch (a_argIndex)
-                {
-                    case 0:
-                        return "Health:int";
-                    case 1:
-                        return "Damage:float";
-                }
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                if (a_args.Length != 2)
-                {
-                    return "Invalid Argument Length!";
-                }
-
-                if (int.TryParse(a_args[0], out int health) == false)
-                {
-                    return "Invalid Health Argument: expected int!";
-                }
-
-                if (float.TryParse(a_args[1], out float damage) == false)
-                {
-                    return "Invalid Damage Argument: expected float!";
-                }
-
-                ExampleCommand(health, damage);
-                return "Success";
-            }
-
-
-            static void ExampleCommand(int a_health, float damage)
-            {
-
-            }
-        }
-
-        public class KConsoleTestCommandCar : ICommand
-        {
-            string ICommand.Name { get; set; } = "Car";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                switch (a_argIndex)
-                {
-                    case 0:
-                        return "Health:int";
-                    case 1:
-                        return "Damage:float";
-                }
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                if (a_args.Length != 2)
-                {
-                    return "Invalid Argument Length!";
-                }
-
-                if (int.TryParse(a_args[0], out int health) == false)
-                {
-                    return "Invalid Health Argument: expected int!";
-                }
-
-                if (float.TryParse(a_args[1], out float damage) == false)
-                {
-                    return "Invalid Damage Argument: expected float!";
-                }
-
-                ExampleCommand(health, damage);
-                return "Success";
-            }
-
-
-            static void ExampleCommand(int a_health, float damage)
-            {
-
-            }
-        }
-
-        public class KConsoleTestCommandCan : ICommand
-        {
-            string ICommand.Name { get; set; } = "Can";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                return "Success";
-            }
-        }
-
-        public class KConsoleTestCommandChrist : ICommand
-        {
-            string ICommand.Name { get; set; } = "Christ";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                return "Success";
-            }
-        }
-
-        public class KConsoleTestCommandChild : ICommand
-        {
-            string ICommand.Name { get; set; } = "Child";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                return "Success";
-            }
-        }
-
-        public class KConsoleTestCommandChill : ICommand
-        {
-            string ICommand.Name { get; set; } = "Chill";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                return "Success";
-            }
-        }
-
-        public class KConsoleTestCommandChilling : ICommand
-        {
-            string ICommand.Name { get; set; } = "Chilling";
-
-            string ICommand.GetArgName(int a_argIndex)
-            {
-                return string.Empty;
-            }
-
-            string ICommand.Run(params string[] a_args)
-            {
-                return "Success";
-            }
-        }
-        #endregion
-
+        // Input Fields
         [SerializeField] 
         private TMPro.TextMeshProUGUI _inputText = null;
+        [SerializeField] 
+        private TMPro.TMP_InputField _inputField = null;
+        private int _currentInputLength = 0;
 
+        // Prediction
         [SerializeField]
         private Color _predictionTextColour = Color.gray;
         private TMPro.TextMeshProUGUI _predictionText = null;
         private RectTransform _predictionTransform = null;
 
+        // Commands
         private List<ICommand> _predictionCommands = new List<ICommand>(5);
         private ICommand _currentCommand = null;
 
-        [SerializeField] 
-        private TMPro.TMP_InputField _inputField = null;
-
+        // Remember Last Command
         [SerializeField]
         private bool _rememberLastCommandOnOpen = true;
-
         private string _lastCommandName = "";
+
+        // History
+        [SerializeField]
+        private RectTransform _HistoryRect = null;
+        [SerializeField]
+        private TMPro.TextMeshProUGUI _HistoryTemplate = null;
+
+        private Transform _HistoryItemPoolRoot = null;
+        private Stack<TMPro.TextMeshProUGUI> _HistoryItemPool = null;
+        private Queue<TMPro.TextMeshProUGUI> _HistoryQueue = null;
+
+        [SerializeField]
+        private LayerMask _RaycastLayers;
+
+        [SerializeField] 
+        private RectTransform _contextRect = null;
+        [SerializeField]
+        private TMPro.TextMeshProUGUI _contextText = null;
 
         public bool IsOpen => gameObject.activeSelf;
 
         private void Awake()
         {
-            KConsole.Initialise(this, 100);
-
-            bool bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandCar());
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandChrist());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandCan());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandChild());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandChildren());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandChill());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-            bSuccess = KConsole.RegisterCommand(new KConsoleTestCommandChilling());
-            Debug.Assert(bSuccess, "Failed to Register Command");
-
-            ICommand bestMatch = KConsole.LookupBestMatch("c");
-            Debug.Assert(bestMatch != null, "No Match!");
-
-            List<ICommand> matchingCommands = new List<ICommand>(5);
-            bSuccess =  KConsole.LookupBestMatches("c", ref matchingCommands);
-            Debug.Assert(bSuccess, "Failed to Find Best Matches!");
-
             CreatePredictionObject();
+
+            AwakeHistoryItemPool();
+
+            _inputField.onValidateInput += OnValidateInput;
+
+            KConsole.Initialise(this, 100, 20);
+            TestCommands.Register();
+
+            //KConsole.WriteTo("Test");
+            //KConsole.WriteTo("Alex");
+            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that.");
+            //KConsole.WriteTo("Heres another one!");
+            //KConsole.WriteTo("Heres another two!");
+            //KConsole.WriteTo("Heres another three!");
+            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that.");
+            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that. REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
         }
 
         private void CreatePredictionObject()
@@ -242,7 +93,8 @@ namespace KConsole
 
             if (string.IsNullOrEmpty(_inputField.text) == false)
             {
-                position = new Vector2(_inputText.textBounds.size.x, _predictionTransform.anchoredPosition.y);
+                Vector2 values = _inputText.GetPreferredValues();
+                position = new Vector2(values.x, _predictionTransform.anchoredPosition.y);
             }
                 
             _predictionTransform.anchoredPosition = position;
@@ -254,27 +106,40 @@ namespace KConsole
 
             EventSystem.current.SetSelectedGameObject(_inputField.gameObject);
 
-            if (Input.GetKeyDown(KeyCode.Return))
+            if (Input.GetKeyDown(KeyCode.Tab))
             {
-                // TODO Enter
-            }
-            else if (Input.GetKeyDown(KeyCode.Tab))
-            {
-                if (_currentCommand != null && 
-                    _inputField.text.Length != _currentCommand.Name.Length)
+                string input = _inputField.text;
+                if (_currentInputLength <= 1)
                 {
-                    // Complete Command
-                    string completedCommand = _inputField.text + _predictionText.text;
-                    _inputField.SetTextWithoutNotify(completedCommand);
-                    _inputField.caretPosition = completedCommand.Length;
-                    OnInputStringChanged();
-
-                    // Add Extra Spacing
-                    completedCommand += ' ';
-                    _inputField.SetTextWithoutNotify(completedCommand);
-                    _inputField.caretPosition = completedCommand.Length;
-                    OnInputStringChanged();
+                    if (_currentCommand != null && 
+                        _inputField.text.Length != _currentCommand.Name.Length)
+                    {
+                        // Complete Command
+                        input += _predictionText.text;
+                        _inputField.SetTextWithoutNotify(input);
+                        _inputField.caretPosition = input.Length;
+                        OnInputStringChanged();
+                    }
                 }
+                
+                // Add Extra Spacing
+                input += ' ';
+                _inputField.SetTextWithoutNotify(input);
+                _inputField.caretPosition = input.Length;
+                OnInputStringChanged();
+            }
+            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            {
+                // TODO Cycle Previous Commands?
+            }
+            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            {
+                // TODO Cycle Previous Commands?
+            }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                // Raycast
+                RaycastUpdateContext();
             }
         }
 
@@ -287,6 +152,9 @@ namespace KConsole
                 {
                     SetPredictionText("Type a Command...");
                 }
+
+                _inputField.caretPosition = _lastCommandName.Length;
+                OnInputStringChanged();
             }
             else
             {
@@ -304,12 +172,19 @@ namespace KConsole
                 }
             }
 
+            KConsole.DumpHistoryToHandler();
+            
             EventSystem.current.SetSelectedGameObject(_inputField.gameObject);
+            _inputField.ActivateInputField();
         }
 
         private void OnDisable()
         {
-
+            while (_HistoryQueue.Count > 0)
+            {
+                TextMeshProUGUI history = _HistoryQueue.Dequeue();
+                _HistoryItemPool.Push(history);
+            }
         }
 
         #region InputFieldCallbacks
@@ -319,6 +194,7 @@ namespace KConsole
             string input = _inputField.text;
 
             string[] inputStrings = input.Split(' ');
+            _currentInputLength = inputStrings.Length;
 
             if (string.IsNullOrWhiteSpace(input))
             {
@@ -327,7 +203,7 @@ namespace KConsole
                 return;
             }
 
-            bool IsCommand = inputStrings.Length == 1;
+            bool IsCommand = _currentInputLength == 1;
 
             if (IsCommand)
             {
@@ -350,20 +226,19 @@ namespace KConsole
             }
 
             bool bCommandComplete = _currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text);
-            int ArgCount = inputStrings.Length;
-            bool bArgEmpty = inputStrings.Length <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
+            bool bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
 
-            Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + ArgCount + "ArgEmpty: " + bArgEmpty);
+            Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
             
             if(bCommandComplete)// Arguments
             {
-                string argName = _currentCommand.GetArgName(inputStrings.Length - 1);
+                string argName = _currentCommand.GetArgName(_currentInputLength - 1);
                 argName = argName.Insert(0, " ");
                 SetPredictionText(argName);
             }
-            else if(ArgCount > 1)
+            else if(_currentInputLength > 1)
             {
-                int ArgIndex = ArgCount - 1;
+                int ArgIndex = _currentInputLength - 1;
                 bArgEmpty = string.IsNullOrWhiteSpace(inputStrings[ArgIndex]);
 
                 if (bArgEmpty == false)
@@ -383,12 +258,35 @@ namespace KConsole
         public void OnInputEndEdit()
         {
             string input = _inputField.text;
+            string[] inputStrings = input.Split(' ');
+            string[] inputParams = null;
 
-            ICommand bestMatch = KConsole.LookupBestMatch(input);
-            if (bestMatch != null)
+            if (inputStrings.Length > 0)
             {
-                
+                inputParams = new string[inputStrings.Length - 1];
+                Array.Copy(inputStrings, 1, inputParams, 0, inputStrings.Length - 1);
             }
+            else
+            {
+                inputParams = new string[0];
+            }
+            
+            _inputField.SetTextWithoutNotify("");
+            SetPredictionText("");
+
+            ICommand command = KConsole.LookupExactMatch(inputStrings[0]);
+
+            if (command != null)
+            {
+                KConsole.RunCommand(command, inputParams);
+                _lastCommandName = command.Name;
+            }
+            else if(string.IsNullOrWhiteSpace(inputStrings[0]) == false)
+            {
+                KConsole.WriteTo("Unknown Command: " + inputStrings[0]);
+            }
+
+            _inputField.ActivateInputField();
         }
 
         public void OnInputSelect()
@@ -401,6 +299,20 @@ namespace KConsole
             Debug.Log("OnInputDeselect");
         }
 
+        private char OnValidateInput(string a_text, int a_charindex, char a_addedchar)
+        {
+            char testValue = (char)KConsole.ToggleOpenKeyCode;
+
+            if (a_addedchar == testValue)
+            {
+                return '\0';
+            }
+
+            return a_addedchar;
+        }
+
+        #endregion
+
         public void Open()
         {
             gameObject.SetActive(true);
@@ -411,17 +323,158 @@ namespace KConsole
             gameObject.SetActive(false);
         }
 
-        public void Enter()
-        {
-            
-        }
-        #endregion
-
         private void SetPredictionText(string a_value)
         {
             _predictionText.text = a_value;
         }
 
+        private void AwakeHistoryItemPool()
+        {
+            // Calculate Max Items
+            float height = _HistoryRect.rect.height;
+            float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
+            float fMaxItems = height / itemMinHeight;
+            int iMaxItems = Mathf.FloorToInt(fMaxItems);
+
+            // Create Pool Root
+            GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
+            historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
+            _HistoryItemPoolRoot = historyItemPool.transform;
+            _HistoryItemPoolRoot.SetAsLastSibling();
+
+            _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
+            _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
+
+            for (int i = 0; i < iMaxItems; ++i)
+            {
+                TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
+                                                        historyItemPool.transform)
+                                                        .GetComponent<TextMeshProUGUI>();
+
+                Debug.Assert(textItem != null, "Failed to Clone Text Item");
+                _HistoryItemPool.Push(textItem);
+            }
+        }
+
+        public void OnWriteToConsole(string a_value, Color a_printColor)
+        {
+            if (gameObject.activeSelf == false)
+                return;
+
+            TextMeshProUGUI newHistory = _HistoryItemPool.Pop();
+            newHistory.text = a_value;
+            newHistory.color = a_printColor;
+            newHistory.rectTransform.SetParent(_HistoryRect, false);
+            newHistory.gameObject.SetActive(true);
+
+            Vector2 values = newHistory.GetPreferredValues();
+            float heightOffset = 0f;
+            if (values.y > _HistoryTemplate.rectTransform.rect.height)
+            {
+                newHistory.rectTransform.sizeDelta = new Vector2(newHistory.rectTransform.sizeDelta.x, values.y);
+                heightOffset = (values.y - _HistoryTemplate.rectTransform.rect.height) / 2;
+            }
+            newHistory.rectTransform.anchoredPosition = new Vector2(0, _HistoryTemplate.rectTransform.anchoredPosition.y + heightOffset);
+
+            if (_HistoryQueue.Count > 0)
+            {
+                foreach (TextMeshProUGUI textMeshProUgui in _HistoryQueue)
+                {
+                    float offset = Mathf.Max(_HistoryTemplate.rectTransform.rect.height, values.y);
+                    textMeshProUgui.rectTransform.anchoredPosition = new Vector2(0f, textMeshProUgui.rectTransform.anchoredPosition.y + offset);
+                }
+
+                TextMeshProUGUI oldestHistory = _HistoryQueue.Peek();
+
+                if (oldestHistory.rectTransform.anchoredPosition.y + (oldestHistory.rectTransform.sizeDelta.y * 0.5f) > _HistoryRect.rect.height)
+                {
+                    oldestHistory = _HistoryQueue.Dequeue();
+                    oldestHistory.gameObject.SetActive(false);
+                    oldestHistory.rectTransform.SetParent(_HistoryItemPoolRoot, false);
+                    _HistoryItemPool.Push(oldestHistory);
+                }
+            }
+            _HistoryQueue.Enqueue(newHistory);
+        }
+
+        private Vector3? _lastRayDirection = null;
+        private int _lastRaySelection = 0;
+        private void RaycastUpdateContext()
+        {
+            RaycastHit[] hit = new RaycastHit[10];
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            
+            int hitCount = Physics.RaycastNonAlloc(ray, hit, 1000000, _RaycastLayers.value);
+
+            GameObject context = null;
+            if (hitCount > 0)
+            {
+                int selection = _lastRaySelection;
+
+                
+                if (_lastRayDirection != null)
+                {
+                    float dot = Vector3.Dot(ray.direction, _lastRayDirection.Value);
+                    if (dot > 0.998) // Same Direction - Cycle
+                    {
+                        selection++;
+                        if (selection >= hitCount)
+                        {
+                            selection = 0;
+                        }
+
+                        if (hit[selection].transform == null) // Avoid Possible null Selection
+                        {
+                            selection = 0;
+                        }
+                    }
+                    else // New Direction - Reset
+                    {
+                        selection = 0;
+                    }
+                }
+
+                context = hit[selection].transform.gameObject;
+
+                _lastRayDirection = ray.direction;
+                _lastRaySelection = selection;
+
+            }
+            else
+            {
+                _lastRayDirection = null;
+                _lastRaySelection = 0;
+            }
+
+            if (KConsole.CommandContext != null &&
+                context != null &&
+                KConsole.CommandContext.GetInstanceID() == context.GetInstanceID())
+            {
+                return;
+            }
+
+            KConsole.CommandContext = context;
+            OnContextSet(KConsole.CommandContext);
+        }
+
+        private void OnContextSet(GameObject a_object)
+        {
+            if (_contextText == null || a_object == null)
+            {
+                _contextRect.gameObject.SetActive(false);
+                return;
+            }
+
+            if (_contextRect.gameObject.activeSelf == false)
+            {
+                _contextRect.gameObject.SetActive(true);
+            }
+
+            _contextText.text = a_object.name + " : " + a_object.tag + " : " + a_object.GetInstanceID();
+            Vector2 newValues  = _contextText.GetPreferredValues();
+
+            _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
+        }
     }
 }
 

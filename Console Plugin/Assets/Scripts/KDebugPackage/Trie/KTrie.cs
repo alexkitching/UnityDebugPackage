@@ -121,6 +121,13 @@ public partial class KTrie
         return true;
     }
 
+    public ILookupQuery LookupExactMatch(string a_string)
+    {
+        KTrieNode node = LookupCompleteMatch(m_Root, a_string);
+
+        return new LookupQuery(node, false, 0, 0);
+    }
+
     public ILookupQuery LookupBestMatch(string a_string)
     {
         LookupQuery query = LookupMatchIncludingPartialString(m_Root, a_string);
@@ -337,7 +344,7 @@ public partial class KTrie
 
         while (currentNode != null)
         {
-            KTrieNode.MatchResult matchingResult = currentNode.GetMatchingChild(a_string);
+            KTrieNode.MatchResult matchingResult = currentNode.GetMatchingChild(findString);
 
             if (matchingResult.MatchType == KTrieNode.MatchType.None ||
                 matchingResult.MatchType == KTrieNode.MatchType.PartialNode)

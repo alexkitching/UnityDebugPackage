@@ -22,7 +22,7 @@ public class ConsoleInputListener : MonoBehaviour
         //    }
         //}
 
-        if (Input.GetKeyDown(KeyCode.BackQuote))
+        if (Input.GetKeyDown(KConsole.KConsole.ToggleOpenKeyCode))
         {
             KConsole.KConsole.Toggle();
         }
