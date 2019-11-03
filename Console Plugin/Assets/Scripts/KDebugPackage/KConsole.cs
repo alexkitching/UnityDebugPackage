@@ -3,51 +3,50 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.CompilerServices;
-using UnityEngine.Experimental.XR;
 
-namespace KConsole
+public struct CommandResult
 {
-    public struct CommandResult
+    public CommandResult(string a_value)
     {
-        public CommandResult(string a_value)
-        {
-            Result = a_value;
-            PrintColor = Color.white;
-        }
-
-        public CommandResult(string a_value, Color a_printColor)
-        {
-            Result = a_value;
-            PrintColor = a_printColor;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandResult Default(string a_value) {return new CommandResult(a_value, Color.white);}
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static CommandResult Error(string a_value) { return new CommandResult(a_value, Color.red); }
-
-        public string Result;
-        public Color PrintColor;
+        Result = a_value;
+        PrintColor = Color.white;
     }
 
-    public interface ICommand
+    public CommandResult(string a_value, Color a_printColor)
     {
-        string Name { get; set; }
-
-        string GetArgName(int a_argIndex);
-        CommandResult Run(params string[] a_args);
+        Result = a_value;
+        PrintColor = a_printColor;
     }
 
-    public interface IConsoleHandler
-    {
-        bool IsOpen { get;}
-        void Open();
-        void Close();
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static CommandResult Default(string a_value) {return new CommandResult(a_value, Color.white);}
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static CommandResult Error(string a_value) { return new CommandResult(a_value, Color.red); }
 
-        void OnWriteToConsole(string a_value, Color a_color);
-    }
+    public string Result;
+    public Color PrintColor;
+}
 
-    public static class KConsole
+public interface ICommand
+{
+    string Name { get; set; }
+
+    string GetArgName(int a_argIndex);
+    CommandResult Run(params string[] a_args);
+}
+
+public interface IConsoleHandler
+{
+    bool IsOpen { get;}
+    void Open();
+    void Close();
+
+    void OnWriteToConsole(string a_value, Color a_color);
+}
+
+public static partial class KDebug
+{
+    public static class Console
     {
         private struct ConsoleHistory
         {
@@ -257,4 +256,3 @@ namespace KConsole
         }
     }
 }
-

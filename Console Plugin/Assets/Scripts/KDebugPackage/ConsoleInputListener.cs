@@ -22,9 +22,9 @@ public class ConsoleInputListener : MonoBehaviour
         //    }
         //}
 
-        if (Input.GetKeyDown(KConsole.KConsole.ToggleOpenKeyCode))
+        if (Input.GetKeyDown(KDebug.Console.ToggleOpenKeyCode))
         {
-            KConsole.KConsole.Toggle();
+            KDebug.Console.Toggle();
         }
     }
 }

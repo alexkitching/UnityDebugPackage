@@ -1,10 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using KDebug;
 using UnityEngine;
-using UnityEngine.Experimental.XR;
 
-public class KDebugDisplayHandler : MonoBehaviour, KDebug.DebugDisplayHandler
+public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
 {
     [SerializeField] 
     private RectTransform _displayTemplate = null;

@@ -1,137 +1,97 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading;
-using TMPro.EditorUtilities;
-using UnityEngine;
+﻿using UnityEngine;
 
-namespace KDebug
+public static partial class KDebug
 {
-    public delegate void GCNotification();
+    private static IPerformanceTracker s_Tracker = null;
 
-    
-public interface IPerformanceTracker
-{
-    float GetFPS { get; }
-    float GetCPUms { get; }
-    bool WasLongFrame { get; }
-    bool WasGCCollected { get; }
-}
-
-    public class KPerformanceTracker : MonoBehaviour, IPerformanceTracker
+    public static void SetPerformanceTracker(IPerformanceTracker a_tracker)
     {
-        public float GetFPS => throw new System.NotImplementedException();
-    
-        public float GetCPUms => throw new System.NotImplementedException();
-    
-        public bool WasLongFrame => throw new System.NotImplementedException();
-    
-        public bool WasGCCollected => throw new System.NotImplementedException();
-    
-        private System.Threading.Thread _gcMonitorThread = null;
-        private static bool _bMonitorGC = false;
-    
-        private static bool _bGCApproaching = false;
-        private static bool _bGCComplete = false;
-    
-        private bool _bLastGCApproaching = false;
-        private bool _bLastGCComplete = false;
-    
-        private static event GCNotification _onnGCApproach = null;
-        private static event GCNotification _onnGCComplete = null;
+        s_Tracker = a_tracker;
+    }
 
-        private static readonly Mutex _mutex = new Mutex(false, "GCNotificationMutex");
+    public static IPerformanceTracker Tracker
+    {
+        get => s_Tracker;
+    }
 
-        void Awake()
-        {
-            _onnGCApproach += OnGCApproachNotify;
-            _onnGCComplete += OnGCCompleteNotify;
-            //System.GC.RegisterForFullGCNotification(10,10);
-    
-            _bMonitorGC = true;
-            //_gcMonitorThread = new Thread(MonitorGC);
-            //_gcMonitorThread.Start();
+    public interface IPerformanceTracker
+    {
+        float GetFPS { get; }
+        float GetCPUms { get; }
+        bool WasLongFrame { get; }
+        bool WasGCCollected { get; }
+        long GetCurrentMemory { get; }
+        long GetHeapSize { get; }
+    }
+}   
 
-        }
-    
-        // Start is called before the first frame update
-        void Start()
-        {
-            
-        }
-    
-        // Update is called once per frame
-        void Update()
-        {
-            long memory = System.GC.GetTotalMemory(false);
+public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
+{
+    public float GetFPS => m_FPS;
 
-            Debug.Log("GC Memory: " + memory);
+    public float GetCPUms => m_DeltaTime * 1000;
 
+    public bool WasLongFrame => m_bWasLongFrame;
 
-            if (_bGCApproaching != _bLastGCApproaching)
-            {
-                _bLastGCApproaching = _bGCApproaching;
-            }
-            else if (_bGCApproaching && _bLastGCApproaching)
-            {
-                _bGCApproaching = false;
-            }
-        }
-    
-        void OnDestroy()
+    public bool WasGCCollected => m_bGCPerformed;
+    public long GetCurrentMemory => m_LastMemory;
+    public long GetHeapSize => m_HeapSize;
+
+    [SerializeField]
+    private float m_DeltaTime = 0f;
+
+    private int m_FrameCount = 0;
+    private float m_dt = 0f;
+    [SerializeField]
+    private float m_FPS = 0f;
+    private float m_FPSUpdateRate = 4.0f;
+
+    private const float kLongFrameTime = 0.1f;
+    [SerializeField]
+    private bool m_bWasLongFrame = false;
+
+    [SerializeField]
+    private long m_LastMemory = 0;
+    [SerializeField]
+    private bool m_bGCPerformed = false;
+
+    private long m_HeapSize = 0;
+
+    void Awake()
+    {
+        KDebug.SetPerformanceTracker(this);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        m_DeltaTime = Time.unscaledDeltaTime;
+        m_dt += m_DeltaTime;
+
+        m_FrameCount++;
+        
+        // Update FPS
+        if (m_dt > 1.0/m_FPSUpdateRate)
         {
-            _bMonitorGC = false;
-            _onnGCApproach -= OnGCApproachNotify;
-            _onnGCComplete -= OnGCCompleteNotify;
-            _gcMonitorThread = null;
+            m_FPS = m_FrameCount / m_dt;
+            m_FrameCount = 0;
+            m_dt -= 1.0f / m_FPSUpdateRate;
         }
-    
-        // GC Monitoring
-    
-        private static void MonitorGC()
-        {
-            Debug.Log("MonitorGC Entry");
-            while (_bMonitorGC)
-            {
-                System.GCNotificationStatus status = System.GC.WaitForFullGCApproach();
-                if (status == GCNotificationStatus.Succeeded)
-                {
-                    _onnGCApproach?.Invoke();
-                }
-                else
-                {
-                    break;
-                }
-    
-                status = System.GC.WaitForFullGCComplete();
-                if (status == GCNotificationStatus.Succeeded)
-                {
-                    _onnGCComplete?.Invoke();
-                }
-                else
-                {
-                    break;
-                }
-            }
-    
-            System.Threading.Thread.Sleep(500);
-        }
-    
-        // GC Notifications
-        private static void OnGCApproachNotify()
-        {
-            _mutex.WaitOne();
-            _bGCApproaching = true;
-            _mutex.ReleaseMutex();
-        }
-    
-        private static void OnGCCompleteNotify()
-        {
-            _mutex.WaitOne();
-            _bGCComplete = true;
-            _mutex.ReleaseMutex();
-        }
+
+        // Monitor GC
+        long memory = System.GC.GetTotalMemory(false);
+        m_bGCPerformed = memory < m_LastMemory ? true : false;
+        m_LastMemory = memory;
+
+        // Long Frame?
+        m_bWasLongFrame = m_DeltaTime > kLongFrameTime ? true : false;
+
+        m_HeapSize = UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong();
+    }
+
+    void OnDestroy()
+    {
+
     }
 
 }
-

@@ -8,473 +8,484 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-namespace KConsole
+
+public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 {
-    public class KConsoleWindow : MonoBehaviour, IConsoleHandler
+    // Input Fields
+    [Header("Input Fields")]
+    [SerializeField] 
+    private TMPro.TextMeshProUGUI _inputText = null;
+    [SerializeField] 
+    private TMPro.TMP_InputField _inputField = null;
+    private int _currentInputLength = 0;
+
+    // Prediction
+    [Header("Prediction")]
+    [SerializeField]
+    private Color _predictionTextColour = Color.gray;
+    private TMPro.TextMeshProUGUI _predictionText = null;
+    private RectTransform _predictionTransform = null;
+
+    // Commands
+    private List<ICommand> _predictionCommands = new List<ICommand>(5);
+    private ICommand _currentCommand = null;
+
+    // History
+    [Header("History")]
+    [SerializeField]
+    private RectTransform _HistoryRect = null;
+    [SerializeField]
+    private TMPro.TextMeshProUGUI _HistoryTemplate = null;
+
+    private Transform _HistoryItemPoolRoot = null;
+    private Stack<TMPro.TextMeshProUGUI> _HistoryItemPool = null;
+    private Queue<TMPro.TextMeshProUGUI> _HistoryQueue = null;
+
+    [Header("Context Object Raycast")]
+    [SerializeField]
+    private LayerMask _RaycastLayers;
+
+    [SerializeField] 
+    private RectTransform _contextRect = null;
+    [SerializeField]
+    private TMPro.TextMeshProUGUI _contextText = null;
+
+    [Header("Logic")]
+    // Remember Last Command
+    [SerializeField]
+    private bool _rememberLastCommandOnOpen = true;
+    private string _lastCommandName = "";
+
+    private bool bJustEnabled = false;
+
+    public bool IsOpen => gameObject.activeSelf;
+
+    private void Awake()
     {
-        // Input Fields
-        [SerializeField] 
-        private TMPro.TextMeshProUGUI _inputText = null;
-        [SerializeField] 
-        private TMPro.TMP_InputField _inputField = null;
-        private int _currentInputLength = 0;
+        CreatePredictionObject();
 
-        // Prediction
-        [SerializeField]
-        private Color _predictionTextColour = Color.gray;
-        private TMPro.TextMeshProUGUI _predictionText = null;
-        private RectTransform _predictionTransform = null;
+        AwakeHistoryItemPool();
 
-        // Commands
-        private List<ICommand> _predictionCommands = new List<ICommand>(5);
-        private ICommand _currentCommand = null;
+        _inputField.onValidateInput += OnValidateInput;
 
-        // Remember Last Command
-        [SerializeField]
-        private bool _rememberLastCommandOnOpen = true;
-        private string _lastCommandName = "";
+        KDebug.Console.Initialise(this, 100, 20);
+        KDebug.TestCommands.Register();
 
-        // History
-        [SerializeField]
-        private RectTransform _HistoryRect = null;
-        [SerializeField]
-        private TMPro.TextMeshProUGUI _HistoryTemplate = null;
-
-        private Transform _HistoryItemPoolRoot = null;
-        private Stack<TMPro.TextMeshProUGUI> _HistoryItemPool = null;
-        private Queue<TMPro.TextMeshProUGUI> _HistoryQueue = null;
-
-        [SerializeField]
-        private LayerMask _RaycastLayers;
-
-        [SerializeField] 
-        private RectTransform _contextRect = null;
-        [SerializeField]
-        private TMPro.TextMeshProUGUI _contextText = null;
-
-        public bool IsOpen => gameObject.activeSelf;
-
-        private void Awake()
+        Transform parent = _inputField.transform.parent;
+        if (parent)
         {
-            CreatePredictionObject();
+            Transform caretTransform = parent.GetChild(0);
 
-            AwakeHistoryItemPool();
-
-            _inputField.onValidateInput += OnValidateInput;
-
-            KConsole.Initialise(this, 100, 20);
-            TestCommands.Register();
-
-            //KConsole.WriteTo("Test");
-            //KConsole.WriteTo("Alex");
-            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that.");
-            //KConsole.WriteTo("Heres another one!");
-            //KConsole.WriteTo("Heres another two!");
-            //KConsole.WriteTo("Heres another three!");
-            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that.");
-            //KConsole.WriteTo("This is the longest ever piece of history alex is going to add to his console most probably actually who knows I don't I know that. REEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE");
-        }
-
-        private void CreatePredictionObject()
-        {
-            GameObject predictionGO = Instantiate(_inputText.gameObject, _inputText.transform.parent);
-            predictionGO.transform.SetAsLastSibling();
-            predictionGO.name = "TXT_Prediction";
-            _predictionText = predictionGO.GetComponent<TMPro.TextMeshProUGUI>();
-            SetPredictionText("Test");
-            _predictionTransform = (RectTransform)predictionGO.transform;
-            _predictionText.color = _predictionTextColour;
-            UpdatePredictionObjectOffset();
-        }
-
-        private void UpdatePredictionObjectOffset()
-        {
-            Vector2 position = new Vector2(0f,_predictionTransform.anchoredPosition.y);
-
-            if (string.IsNullOrEmpty(_inputField.text) == false)
+            if (caretTransform)
             {
-                Vector2 values = _inputText.GetPreferredValues();
-                position = new Vector2(values.x, _predictionTransform.anchoredPosition.y);
+                caretTransform.SetAsLastSibling();
             }
-                
-            _predictionTransform.anchoredPosition = position;
+        }
+    }
+
+    /// <summary>
+    /// Creates the Predictive Text Object as the last sibling
+    /// </summary>
+    private void CreatePredictionObject()
+    {
+        GameObject predictionGO = Instantiate(_inputText.gameObject, _inputText.transform.parent);
+        predictionGO.transform.SetAsLastSibling();
+        predictionGO.name = "TXT_Prediction";
+        _predictionText = predictionGO.GetComponent<TMPro.TextMeshProUGUI>();
+        SetPredictionText("");
+        _predictionTransform = (RectTransform)predictionGO.transform;
+        _predictionText.color = _predictionTextColour;
+        UpdatePredictionObjectOffset();
+    }
+
+    /// <summary>
+    /// Updates the offset of the predicted text.
+    /// </summary>
+    private void UpdatePredictionObjectOffset()
+    {
+        Vector2 position = new Vector2(0f,_predictionTransform.anchoredPosition.y);
+
+        if (string.IsNullOrEmpty(_inputField.text) == false)
+        {
+            Vector2 values = _inputText.GetPreferredValues();
+            position = new Vector2(values.x, _predictionTransform.anchoredPosition.y);
+        }
+            
+        _predictionTransform.anchoredPosition = position;
+    }
+
+    private void Update()
+    {
+        UpdatePredictionObjectOffset();
+
+        if (bJustEnabled)
+        {
+            OnPostEnable();
         }
 
-        private void Update()
+        if (Input.GetKeyDown(KeyCode.Tab))
         {
-            UpdatePredictionObjectOffset();
-
-            EventSystem.current.SetSelectedGameObject(_inputField.gameObject);
-
-            if (Input.GetKeyDown(KeyCode.Tab))
+            string input = _inputField.text;
+            if (_currentInputLength <= 1)
             {
-                string input = _inputField.text;
-                if (_currentInputLength <= 1)
+                if (_currentCommand != null && 
+                    _inputField.text.Length != _currentCommand.Name.Length)
                 {
-                    if (_currentCommand != null && 
-                        _inputField.text.Length != _currentCommand.Name.Length)
-                    {
-                        // Complete Command
-                        input += _predictionText.text;
-                        _inputField.SetTextWithoutNotify(input);
-                        _inputField.caretPosition = input.Length;
-                        OnInputStringChanged();
-                    }
+                    // Complete Command
+                    input += _predictionText.text;
+                    _inputField.SetTextWithoutNotify(input);
+                    _inputField.caretPosition = input.Length;
+                    OnInputStringChanged();
                 }
-                
-                // Add Extra Spacing
-                input += ' ';
-                _inputField.SetTextWithoutNotify(input);
-                _inputField.caretPosition = input.Length;
-                OnInputStringChanged();
             }
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            
+            // Add Extra Spacing
+            input += ' ';
+            _inputField.SetTextWithoutNotify(input);
+            _inputField.caretPosition = input.Length;
+            OnInputStringChanged();
+        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            // TODO Cycle Previous Commands?
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            // TODO Cycle Previous Commands?
+        }
+        else if (Input.GetMouseButtonUp(0))
+        {
+            // Raycast
+            RaycastUpdateContext();
+        }
+    }
+
+    private void OnEnable()
+    {
+        if (_rememberLastCommandOnOpen)
+        {
+            _inputField.SetTextWithoutNotify(_lastCommandName);
+            if (string.IsNullOrEmpty(_lastCommandName))
             {
-                // TODO Cycle Previous Commands?
+                SetPredictionText("Type a Command...");
             }
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                // TODO Cycle Previous Commands?
-            }
-            else if (Input.GetMouseButtonUp(0))
-            {
-                // Raycast
-                RaycastUpdateContext();
-            }
+
+            _inputField.caretPosition = _lastCommandName.Length;
+            OnInputStringChanged();
+        }
+        else
+        {
+            _inputField.SetTextWithoutNotify("");
+        }
+        KDebug.Console.DumpHistoryToHandler();
+        bJustEnabled = true;
+    }
+
+    private void OnPostEnable()
+    {
+        _inputField.gameObject.SetActive(true);
+        _inputField.enabled = true;
+        PointerEventData data = new PointerEventData(EventSystem.current);
+        _inputField.OnPointerClick(data);
+        bJustEnabled = false;
+    }
+
+    private void OnDisable()
+    {
+
+        while (_HistoryQueue.Count > 0)
+        {
+            TextMeshProUGUI history = _HistoryQueue.Dequeue();
+            _HistoryItemPool.Push(history);
+        }
+    }
+
+    #region InputFieldCallbacks
+    public void OnInputStringChanged()
+    {
+        Debug.Log("OnInputStringChanged");
+        string input = _inputField.text;
+
+        string[] inputStrings = input.Split(' ');
+        _currentInputLength = inputStrings.Length;
+
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            _currentCommand = null;
+            SetPredictionText("Type a Command...");
+            return;
         }
 
-        private void OnEnable()
-        {
-            if (_rememberLastCommandOnOpen)
-            {
-                _inputField.SetTextWithoutNotify(_lastCommandName);
-                if (string.IsNullOrEmpty(_lastCommandName))
-                {
-                    SetPredictionText("Type a Command...");
-                }
+        bool IsCommand = _currentInputLength == 1;
 
-                _inputField.caretPosition = _lastCommandName.Length;
-                OnInputStringChanged();
+        if (IsCommand)
+        {
+            bool bMatchFound  = KDebug.Console.LookupBestMatches(input, ref _predictionCommands);
+
+            if (bMatchFound)
+            {
+                ICommand firstMatch = _predictionCommands[0];
+                string predictionText = firstMatch.Name.Substring(input.Length, firstMatch.Name.Length - input.Length);
+                Debug.Log(predictionText);
+                SetPredictionText(predictionText);
+                _currentCommand = firstMatch;
             }
             else
-            {
-                _inputField.SetTextWithoutNotify("");
-            }
-
-            Transform parent = _inputField.transform.parent;
-            if (parent)
-            {
-                Transform caretTransform = parent.GetChild(0);
-
-                if (caretTransform)
-                {
-                    caretTransform.SetAsLastSibling();
-                }
-            }
-
-            KConsole.DumpHistoryToHandler();
-            
-            EventSystem.current.SetSelectedGameObject(_inputField.gameObject);
-            _inputField.ActivateInputField();
-        }
-
-        private void OnDisable()
-        {
-            while (_HistoryQueue.Count > 0)
-            {
-                TextMeshProUGUI history = _HistoryQueue.Dequeue();
-                _HistoryItemPool.Push(history);
-            }
-        }
-
-        #region InputFieldCallbacks
-        public void OnInputStringChanged()
-        {
-            Debug.Log("OnInputStringChanged");
-            string input = _inputField.text;
-
-            string[] inputStrings = input.Split(' ');
-            _currentInputLength = inputStrings.Length;
-
-            if (string.IsNullOrWhiteSpace(input))
             {
                 _currentCommand = null;
-                SetPredictionText("Type a Command...");
-                return;
+                SetPredictionText(string.Empty);
             }
-
-            bool IsCommand = _currentInputLength == 1;
-
-            if (IsCommand)
-            {
-                bool bMatchFound  = KConsole.LookupBestMatches(input, ref _predictionCommands);
-
-                if (bMatchFound)
-                {
-                    ICommand firstMatch = _predictionCommands[0];
-                    string predictionText = firstMatch.Name.Substring(input.Length, firstMatch.Name.Length - input.Length);
-                    Debug.Log(predictionText);
-                    SetPredictionText(predictionText);
-                    _currentCommand = firstMatch;
-                }
-                else
-                {
-                    _currentCommand = null;
-                    SetPredictionText(string.Empty);
-                }
-                _predictionCommands.Clear();
-            }
-
-            bool bCommandComplete = _currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text);
-            bool bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
-
-            Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
-            
-            if(bCommandComplete)// Arguments
-            {
-                string argName = _currentCommand.GetArgName(_currentInputLength - 1);
-                argName = argName.Insert(0, " ");
-                SetPredictionText(argName);
-            }
-            else if(_currentInputLength > 1)
-            {
-                int ArgIndex = _currentInputLength - 1;
-                bArgEmpty = string.IsNullOrWhiteSpace(inputStrings[ArgIndex]);
-
-                if (bArgEmpty == false)
-                {
-                    ++ArgIndex;
-                }
-
-                Debug.Assert(_currentCommand != null, "Current Command is null!");
-
-                string argName = _currentCommand.GetArgName(ArgIndex - 1);
-                argName = argName.Insert(0, " ");
-                SetPredictionText(argName);
-            }
-
+            _predictionCommands.Clear();
         }
 
-        public void OnInputEndEdit()
+        bool bCommandComplete = _currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text);
+        bool bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
+
+        Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
+        
+        if(bCommandComplete)// Arguments
         {
-            string input = _inputField.text;
-            string[] inputStrings = input.Split(' ');
-            string[] inputParams = null;
+            string argName = _currentCommand.GetArgName(_currentInputLength - 1);
+            argName = argName.Insert(0, " ");
+            SetPredictionText(argName);
+        }
+        else if(_currentInputLength > 1)
+        {
+            int ArgIndex = _currentInputLength - 1;
+            bArgEmpty = string.IsNullOrWhiteSpace(inputStrings[ArgIndex]);
 
-            if (inputStrings.Length > 0)
+            if (bArgEmpty == false)
             {
-                inputParams = new string[inputStrings.Length - 1];
-                Array.Copy(inputStrings, 1, inputParams, 0, inputStrings.Length - 1);
-            }
-            else
-            {
-                inputParams = new string[0];
-            }
-            
-            _inputField.SetTextWithoutNotify("");
-            SetPredictionText("");
-
-            ICommand command = KConsole.LookupExactMatch(inputStrings[0]);
-
-            if (command != null)
-            {
-                KConsole.RunCommand(command, inputParams);
-                _lastCommandName = command.Name;
-            }
-            else if(string.IsNullOrWhiteSpace(inputStrings[0]) == false)
-            {
-                KConsole.WriteTo("Unknown Command: " + inputStrings[0]);
+                ++ArgIndex;
             }
 
-            _inputField.ActivateInputField();
+            Debug.Assert(_currentCommand != null, "Current Command is null!");
+
+            string argName = _currentCommand.GetArgName(ArgIndex - 1);
+            argName = argName.Insert(0, " ");
+            SetPredictionText(argName);
         }
 
-        public void OnInputSelect()
+    }
+
+    public void OnInputEndEdit()
+    {
+        string input = _inputField.text;
+        string[] inputStrings = input.Split(' ');
+        string[] inputParams = null;
+
+        if (inputStrings.Length > 0)
         {
-            Debug.Log("OnInputSelect");
+            inputParams = new string[inputStrings.Length - 1];
+            Array.Copy(inputStrings, 1, inputParams, 0, inputStrings.Length - 1);
         }
-
-        public void OnInputDeselect()
+        else
         {
-            Debug.Log("OnInputDeselect");
+            inputParams = new string[0];
         }
+        
+        _inputField.SetTextWithoutNotify("");
+        SetPredictionText("");
 
-        private char OnValidateInput(string a_text, int a_charindex, char a_addedchar)
+        ICommand command = KDebug.Console.LookupExactMatch(inputStrings[0]);
+
+        if (command != null)
         {
-            char testValue = (char)KConsole.ToggleOpenKeyCode;
-
-            if (a_addedchar == testValue)
-            {
-                return '\0';
-            }
-
-            return a_addedchar;
+            KDebug.Console.RunCommand(command, inputParams);
+            _lastCommandName = command.Name;
         }
-
-        #endregion
-
-        public void Open()
+        else if(string.IsNullOrWhiteSpace(inputStrings[0]) == false)
         {
-            gameObject.SetActive(true);
+            KDebug.Console.WriteTo("Unknown Command: " + inputStrings[0]);
         }
 
-        public void Close()
+        _inputField.ActivateInputField();
+    }
+
+    public void OnInputSelect()
+    {
+        Debug.Log("OnInputSelect");
+    }
+
+    public void OnInputDeselect()
+    {
+        Debug.Log("OnInputDeselect");
+    }
+
+    private char OnValidateInput(string a_text, int a_charindex, char a_addedchar)
+    {
+        char testValue = (char)KDebug.Console.ToggleOpenKeyCode;
+
+        if (a_addedchar == testValue)
         {
-            gameObject.SetActive(false);
+            return '\0';
         }
 
-        private void SetPredictionText(string a_value)
+        return a_addedchar;
+    }
+
+    #endregion
+
+    public void Open()
+    {
+        gameObject.SetActive(true);
+    }
+
+    public void Close()
+    {
+        gameObject.SetActive(false);
+    }
+
+    private void SetPredictionText(string a_value)
         {
             _predictionText.text = a_value;
         }
 
-        private void AwakeHistoryItemPool()
+    private void AwakeHistoryItemPool()
+    {
+        // Calculate Max Items
+        float height = _HistoryRect.rect.height;
+        float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
+        float fMaxItems = height / itemMinHeight;
+        int iMaxItems = Mathf.FloorToInt(fMaxItems);
+
+        // Create Pool Root
+        GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
+        historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
+        _HistoryItemPoolRoot = historyItemPool.transform;
+        _HistoryItemPoolRoot.SetAsLastSibling();
+
+        _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
+        _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
+
+        for (int i = 0; i < iMaxItems; ++i)
         {
-            // Calculate Max Items
-            float height = _HistoryRect.rect.height;
-            float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
-            float fMaxItems = height / itemMinHeight;
-            int iMaxItems = Mathf.FloorToInt(fMaxItems);
+            TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
+                                                    historyItemPool.transform)
+                                                    .GetComponent<TextMeshProUGUI>();
 
-            // Create Pool Root
-            GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
-            historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
-            _HistoryItemPoolRoot = historyItemPool.transform;
-            _HistoryItemPoolRoot.SetAsLastSibling();
+            Debug.Assert(textItem != null, "Failed to Clone Text Item");
+            _HistoryItemPool.Push(textItem);
+        }
+    }
 
-            _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
-            _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
+    public void OnWriteToConsole(string a_value, Color a_printColor)
+    {
+        if (gameObject.activeSelf == false)
+            return;
 
-            for (int i = 0; i < iMaxItems; ++i)
+        TextMeshProUGUI newHistory = _HistoryItemPool.Pop();
+        newHistory.text = a_value;
+        newHistory.color = a_printColor;
+        newHistory.rectTransform.SetParent(_HistoryRect, false);
+        newHistory.gameObject.SetActive(true);
+
+        Vector2 values = newHistory.GetPreferredValues();
+        float heightOffset = 0f;
+        if (values.y > _HistoryTemplate.rectTransform.rect.height)
+        {
+            newHistory.rectTransform.sizeDelta = new Vector2(newHistory.rectTransform.sizeDelta.x, values.y);
+            heightOffset = (values.y - _HistoryTemplate.rectTransform.rect.height) / 2;
+        }
+        newHistory.rectTransform.anchoredPosition = new Vector2(0, _HistoryTemplate.rectTransform.anchoredPosition.y + heightOffset);
+
+        if (_HistoryQueue.Count > 0)
+        {
+            foreach (TextMeshProUGUI textMeshProUgui in _HistoryQueue)
             {
-                TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
-                                                        historyItemPool.transform)
-                                                        .GetComponent<TextMeshProUGUI>();
+                float offset = Mathf.Max(_HistoryTemplate.rectTransform.rect.height, values.y);
+                textMeshProUgui.rectTransform.anchoredPosition = new Vector2(0f, textMeshProUgui.rectTransform.anchoredPosition.y + offset);
+            }
 
-                Debug.Assert(textItem != null, "Failed to Clone Text Item");
-                _HistoryItemPool.Push(textItem);
+            TextMeshProUGUI oldestHistory = _HistoryQueue.Peek();
+
+            if (oldestHistory.rectTransform.anchoredPosition.y + (oldestHistory.rectTransform.sizeDelta.y * 0.5f) > _HistoryRect.rect.height)
+            {
+                oldestHistory = _HistoryQueue.Dequeue();
+                oldestHistory.gameObject.SetActive(false);
+                oldestHistory.rectTransform.SetParent(_HistoryItemPoolRoot, false);
+                _HistoryItemPool.Push(oldestHistory);
             }
         }
+        _HistoryQueue.Enqueue(newHistory);
+    }
 
-        public void OnWriteToConsole(string a_value, Color a_printColor)
+    private Vector3? _lastRayDirection = null;
+    private int _lastRaySelection = 0;
+    private void RaycastUpdateContext()
+    {
+        RaycastHit[] hit = new RaycastHit[10];
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        
+        int hitCount = Physics.RaycastNonAlloc(ray, hit, 1000000, _RaycastLayers.value);
+
+        GameObject context = null;
+        if (hitCount > 0)
         {
-            if (gameObject.activeSelf == false)
-                return;
+            int selection = _lastRaySelection;
 
-            TextMeshProUGUI newHistory = _HistoryItemPool.Pop();
-            newHistory.text = a_value;
-            newHistory.color = a_printColor;
-            newHistory.rectTransform.SetParent(_HistoryRect, false);
-            newHistory.gameObject.SetActive(true);
-
-            Vector2 values = newHistory.GetPreferredValues();
-            float heightOffset = 0f;
-            if (values.y > _HistoryTemplate.rectTransform.rect.height)
-            {
-                newHistory.rectTransform.sizeDelta = new Vector2(newHistory.rectTransform.sizeDelta.x, values.y);
-                heightOffset = (values.y - _HistoryTemplate.rectTransform.rect.height) / 2;
-            }
-            newHistory.rectTransform.anchoredPosition = new Vector2(0, _HistoryTemplate.rectTransform.anchoredPosition.y + heightOffset);
-
-            if (_HistoryQueue.Count > 0)
-            {
-                foreach (TextMeshProUGUI textMeshProUgui in _HistoryQueue)
-                {
-                    float offset = Mathf.Max(_HistoryTemplate.rectTransform.rect.height, values.y);
-                    textMeshProUgui.rectTransform.anchoredPosition = new Vector2(0f, textMeshProUgui.rectTransform.anchoredPosition.y + offset);
-                }
-
-                TextMeshProUGUI oldestHistory = _HistoryQueue.Peek();
-
-                if (oldestHistory.rectTransform.anchoredPosition.y + (oldestHistory.rectTransform.sizeDelta.y * 0.5f) > _HistoryRect.rect.height)
-                {
-                    oldestHistory = _HistoryQueue.Dequeue();
-                    oldestHistory.gameObject.SetActive(false);
-                    oldestHistory.rectTransform.SetParent(_HistoryItemPoolRoot, false);
-                    _HistoryItemPool.Push(oldestHistory);
-                }
-            }
-            _HistoryQueue.Enqueue(newHistory);
-        }
-
-        private Vector3? _lastRayDirection = null;
-        private int _lastRaySelection = 0;
-        private void RaycastUpdateContext()
-        {
-            RaycastHit[] hit = new RaycastHit[10];
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             
-            int hitCount = Physics.RaycastNonAlloc(ray, hit, 1000000, _RaycastLayers.value);
-
-            GameObject context = null;
-            if (hitCount > 0)
+            if (_lastRayDirection != null)
             {
-                int selection = _lastRaySelection;
-
-                
-                if (_lastRayDirection != null)
+                float dot = Vector3.Dot(ray.direction, _lastRayDirection.Value);
+                if (dot > 0.998) // Same Direction - Cycle
                 {
-                    float dot = Vector3.Dot(ray.direction, _lastRayDirection.Value);
-                    if (dot > 0.998) // Same Direction - Cycle
+                    selection++;
+                    if (selection >= hitCount)
                     {
-                        selection++;
-                        if (selection >= hitCount)
-                        {
-                            selection = 0;
-                        }
-
-                        if (hit[selection].transform == null) // Avoid Possible null Selection
-                        {
-                            selection = 0;
-                        }
+                        selection = 0;
                     }
-                    else // New Direction - Reset
+
+                    if (hit[selection].transform == null) // Avoid Possible null Selection
                     {
                         selection = 0;
                     }
                 }
-
-                context = hit[selection].transform.gameObject;
-
-                _lastRayDirection = ray.direction;
-                _lastRaySelection = selection;
-
-            }
-            else
-            {
-                _lastRayDirection = null;
-                _lastRaySelection = 0;
+                else // New Direction - Reset
+                {
+                    selection = 0;
+                }
             }
 
-            if (KConsole.CommandContext != null &&
-                context != null &&
-                KConsole.CommandContext.GetInstanceID() == context.GetInstanceID())
-            {
-                return;
-            }
+            context = hit[selection].transform.gameObject;
 
-            KConsole.CommandContext = context;
-            OnContextSet(KConsole.CommandContext);
+            _lastRayDirection = ray.direction;
+            _lastRaySelection = selection;
+
         }
-
-        private void OnContextSet(GameObject a_object)
+        else
         {
-            if (_contextText == null || a_object == null)
-            {
-                _contextRect.gameObject.SetActive(false);
-                return;
-            }
-
-            if (_contextRect.gameObject.activeSelf == false)
-            {
-                _contextRect.gameObject.SetActive(true);
-            }
-
-            _contextText.text = a_object.name + " : " + a_object.tag + " : " + a_object.GetInstanceID();
-            Vector2 newValues  = _contextText.GetPreferredValues();
-
-            _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
+            _lastRayDirection = null;
+            _lastRaySelection = 0;
         }
+
+        if (KDebug.Console.CommandContext != null &&
+            context != null &&
+            KDebug.Console.CommandContext.GetInstanceID() == context.GetInstanceID())
+        {
+            return;
+        }
+
+        KDebug.Console.CommandContext = context;
+        OnContextSet(KDebug.Console.CommandContext);
+    }
+
+    private void OnContextSet(GameObject a_object)
+    {
+        if (_contextText == null || a_object == null)
+        {
+            _contextRect.gameObject.SetActive(false);
+            return;
+        }
+
+        if (_contextRect.gameObject.activeSelf == false)
+        {
+            _contextRect.gameObject.SetActive(true);
+        }
+
+        _contextText.text = a_object.name + " : " + a_object.tag + " : " + a_object.GetInstanceID();
+        Vector2 newValues  = _contextText.GetPreferredValues();
+
+        _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
     }
 }
-
