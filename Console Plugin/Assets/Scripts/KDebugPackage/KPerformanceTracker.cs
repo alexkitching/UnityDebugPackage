@@ -41,7 +41,7 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
     private float m_DeltaTime = 0f;
 
     private int m_FrameCount = 0;
-    private float m_dt = 0f;
+    private float m_accumFps = 0f;
     [SerializeField]
     private float m_FPS = 0f;
     private float m_FPSUpdateRate = 4.0f;
@@ -66,16 +66,16 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
     void Update()
     {
         m_DeltaTime = Time.unscaledDeltaTime;
-        m_dt += m_DeltaTime;
+        m_accumFps += m_DeltaTime;
 
         m_FrameCount++;
         
         // Update FPS
-        if (m_dt > 1.0/m_FPSUpdateRate)
+        if (m_accumFps > 1.0 / m_FPSUpdateRate)
         {
-            m_FPS = m_FrameCount / m_dt;
+            m_FPS = m_FrameCount / m_accumFps;
             m_FrameCount = 0;
-            m_dt -= 1.0f / m_FPSUpdateRate;
+            m_accumFps -= 1.0f / m_FPSUpdateRate;
         }
 
         // Monitor GC

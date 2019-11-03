@@ -8,6 +8,15 @@ public interface DebugDisplayHandler
     void RemoveDisplay(DebugDisplay a_display);
 }
 
+public class TestDisplay : DebugDisplay
+{
+    public override void OnGUI()
+    {
+        DrawText("Test Look at this amazing test!");
+    }
+}
+
+
 public static class KDebugDisplayManager
 {
     private static DebugDisplayHandler s_Handler = null;
@@ -24,6 +33,7 @@ public static class KDebugDisplayManager
 
         PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
         RegisterDisplayAsPrimaryTab(performanceDisplay);
+        RegisterDisplayAsPrimaryTab<TestDisplay>();
     }
 
     public static T RegisterDebugDisplay<T>() where T : DebugDisplay, new()
@@ -56,4 +66,15 @@ public static class KDebugDisplayManager
         s_PrimaryDisplay.AddTab(a_display);
     }
 
+    public static void CyclePrimaryTab(int direction)
+    {
+        if (direction > 0)
+        {
+            s_PrimaryDisplay.NextTab();
+        }
+        else if (direction < 0)
+        {
+            s_PrimaryDisplay.PreviousTab();
+        }
+    }
 }

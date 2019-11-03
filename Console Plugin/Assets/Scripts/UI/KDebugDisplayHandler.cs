@@ -46,8 +46,8 @@ public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
         a_display.OnAdd(rect);
         rect.transform.SetParent(_displayRoot.transform);
         rect.gameObject.SetActive(true);
-
         _activeDisplays.Add(a_display);
+        a_display.OnShow();
     }
 
     public void RemoveDisplay(DebugDisplay a_display)

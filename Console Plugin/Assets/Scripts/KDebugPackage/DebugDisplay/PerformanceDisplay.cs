@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,17 +38,22 @@ public class PerformanceDisplay : DebugDisplay
     private int _GCFrameCounter = 0;
     private int _LongFrameCounter = 0;
 
+    private string FPSStringValue;
+    private string CPUStringValue;
+    private string CurrentMemoryValue;
+    private string CurrentHeapValue;
+
+    private float stringValueUpdateInterval = 0.5f;
+    private float stringValueUpdateTime = 0f;
+
     public override void OnGUI()
     {
         // Draw Title
         DrawText("Performance Display", true);
 
-        // Draw FPS
-        DrawText("FPS: " + $"{KDebug.Tracker.GetFPS:0.#}");
-        DrawText("CPU: " + $"{KDebug.Tracker.GetCPUms:0.##}" + "ms");
-        DrawText("Current Memory: " + KDebug.Tracker.GetCurrentMemory / 1000000 + " Mb");
-        DrawText("Current Heap Size: " + KDebug.Tracker.GetHeapSize / 1000000 + " Mb");
+        DrawPerformanceValues();
 
+        // Draw FPS
         if (KDebug.Tracker.WasGCCollected &&
             _GCFrameCounter != cShowForFrames)
         {
@@ -86,5 +92,25 @@ public class PerformanceDisplay : DebugDisplay
     private void DrawLongFrameIcon()
     {
         GUI.DrawTexture(new Rect(IconSize + 15, GetVerticalOffset() + 0.5f * IconSize, IconSize, IconSize), _LongFrameIcon);
+    }
+
+    private void DrawPerformanceValues()
+    {
+        // Update Data
+        stringValueUpdateTime -= Time.deltaTime;
+        if (stringValueUpdateTime <= 0f)
+        {
+            FPSStringValue = $"FPS: {KDebug.Tracker.GetFPS:0.00}";
+            CPUStringValue = $"CPU: {KDebug.Tracker.GetCPUms:0.00}ms";
+            CurrentMemoryValue = $"Current Memory: {KDebug.Tracker.GetCurrentMemory / 1000000} Mb";
+            CurrentHeapValue = $"Current Heap Size: {KDebug.Tracker.GetHeapSize / 1000000} Mb";
+            stringValueUpdateTime = stringValueUpdateInterval;
+        }
+
+        // Draw Text each frame
+        DrawText(FPSStringValue);
+        DrawText(CPUStringValue);
+        DrawText(CurrentMemoryValue);
+        DrawText(CurrentHeapValue);
     }
 }
