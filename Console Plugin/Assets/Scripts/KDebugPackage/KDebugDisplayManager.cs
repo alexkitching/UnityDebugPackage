@@ -2,79 +2,87 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public interface DebugDisplayHandler
+public partial class KDebug
 {
-    void AddDisplay(DebugDisplay a_display);
-    void RemoveDisplay(DebugDisplay a_display);
-}
-
-public class TestDisplay : DebugDisplay
-{
-    public override void OnGUI()
+    public interface DisplayHandler
     {
-        DrawText("Test Look at this amazing test!");
-    }
-}
-
-
-public static class KDebugDisplayManager
-{
-    private static DebugDisplayHandler s_Handler = null;
-
-    private static readonly DebugTabbedDisplay s_PrimaryDisplay = new DebugTabbedDisplay();
-
-    public static void Initialise(DebugDisplayHandler a_handler)
-    {
-        if (s_Handler != null)
-            return;
-
-        s_Handler = a_handler;
-        s_Handler.AddDisplay(s_PrimaryDisplay);
-
-        PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
-        RegisterDisplayAsPrimaryTab(performanceDisplay);
-        RegisterDisplayAsPrimaryTab<TestDisplay>();
+        void AddDisplay(DebugDisplay a_display);
+        void RemoveDisplay(DebugDisplay a_display);
+        void OnVisualChange(ref VisualSchemeData a_data);
     }
 
-    public static T RegisterDebugDisplay<T>() where T : DebugDisplay, new()
+    public class TestDisplay : DebugDisplay
     {
-        T type = new T();
-        DebugDisplay display = type;
-
-        s_Handler.AddDisplay(display);
-
-        return type;
-    }
-
-    public static void RegisterDisplay(DebugDisplay a_display)
-    {
-        s_Handler.AddDisplay(a_display);
-    }
-
-    public static T RegisterDisplayAsPrimaryTab<T>() where T : DebugDisplay, new()
-    {
-        T type = new T();
-        DebugDisplay display = type;
-
-        s_PrimaryDisplay.AddTab(display);
-
-        return type;
-    }
-
-    public static void RegisterDisplayAsPrimaryTab(DebugDisplay a_display)
-    {
-        s_PrimaryDisplay.AddTab(a_display);
-    }
-
-    public static void CyclePrimaryTab(int direction)
-    {
-        if (direction > 0)
+        public override void OnGUI()
         {
-            s_PrimaryDisplay.NextTab();
+            DrawText("Test Look at this amazing test!");
         }
-        else if (direction < 0)
+    }
+
+    public static class DisplayManager
+    {
+        private static DisplayHandler s_Handler = null;
+
+        private static readonly DebugTabbedDisplay s_PrimaryDisplay = new DebugTabbedDisplay();
+
+        public static bool Initialise(DisplayHandler a_handler)
         {
-            s_PrimaryDisplay.PreviousTab();
+            if (s_Handler != null)
+                return false;
+
+            s_Handler = a_handler;
+            s_Handler.AddDisplay(s_PrimaryDisplay);
+
+            RegisterDisplayAsPrimaryTab<KDebug.TestDisplay>();
+
+            return true;
+        }
+
+        private static void Reset()
+        {
+            s_Handler = null;
+        }
+
+        public static T RegisterDebugDisplay<T>() where T : DebugDisplay, new()
+        {
+            T type = new T();
+            DebugDisplay display = type;
+
+            s_Handler.AddDisplay(display);
+
+            return type;
+        }
+
+        public static void RegisterDisplay(DebugDisplay a_display)
+        {
+            s_Handler.AddDisplay(a_display);
+        }
+
+        public static T RegisterDisplayAsPrimaryTab<T>() where T : DebugDisplay, new()
+        {
+            T type = new T();
+            DebugDisplay display = type;
+
+            s_PrimaryDisplay.AddTab(display);
+
+            return type;
+        }
+
+        public static void RegisterDisplayAsPrimaryTab(DebugDisplay a_display)
+        {
+            s_PrimaryDisplay.AddTab(a_display);
+        }
+
+        public static void CyclePrimaryTab(int direction)
+        {
+            if (direction > 0)
+            {
+                s_PrimaryDisplay.NextTab();
+            }
+            else if (direction < 0)
+            {
+                s_PrimaryDisplay.PreviousTab();
+            }
         }
     }
 }

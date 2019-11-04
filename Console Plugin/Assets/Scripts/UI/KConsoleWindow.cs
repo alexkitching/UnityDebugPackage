@@ -7,6 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 
 public class KConsoleWindow : MonoBehaviour, IConsoleHandler
@@ -21,7 +22,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     // Prediction
     [Header("Prediction")]
-    [SerializeField]
     private Color _predictionTextColour = Color.gray;
     private TMPro.TextMeshProUGUI _predictionText = null;
     private RectTransform _predictionTransform = null;
@@ -56,6 +56,14 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private bool _rememberLastCommandOnOpen = true;
     private string _lastCommandName = "";
 
+    [Header("Visuals")] 
+    [SerializeField]
+    private Image[] primaryImages = null;
+    [SerializeField]
+    private Image[] secondaryImages = null;
+    [SerializeField]
+    private TextMeshProUGUI[] primaryText = null;
+
     private bool bJustEnabled = false;
 
     public bool IsOpen => gameObject.activeSelf;
@@ -68,8 +76,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
         _inputField.onValidateInput += OnValidateInput;
 
-        KDebug.Console.Initialise(this, 100, 20);
-        KDebug.TestCommands.Register();
+        
 
         Transform parent = _inputField.transform.parent;
         if (parent)
@@ -82,6 +89,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             }
         }
     }
+
 
     /// <summary>
     /// Creates the Predictive Text Object as the last sibling
@@ -487,5 +495,37 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         Vector2 newValues  = _contextText.GetPreferredValues();
 
         _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
+    }
+
+    public void OnVisualChange(ref VisualSchemeData a_data)
+    {
+        for (int i = 0; i < primaryImages.Length; ++i)
+        {
+            Image img = primaryImages[i];
+            if (img != null)
+            {
+                img.color = a_data.PrimaryColor;
+            }
+        }
+
+        for (int i = 0; i < secondaryImages.Length; ++i)
+        {
+            Image img = secondaryImages[i];
+            if (img != null)
+            {
+                img.color = a_data.SecondaryColor;
+            }
+        }
+
+        for (int i = 0; i < primaryText.Length; ++i)
+        {
+            TextMeshProUGUI text = primaryText[i];
+            if (text != null)
+            {
+                text.color = a_data.PrimaryTextColor;
+            }
+        }
+
+        _predictionTextColour = new Color(a_data.PrimaryTextColor.r, a_data.PrimaryTextColor.g, a_data.PrimaryTextColor.b, a_data.PredictionTextAlpha);
     }
 }

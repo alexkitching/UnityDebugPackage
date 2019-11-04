@@ -5,7 +5,7 @@ using UnityEngine;
 
 public partial class KDebug
 {
-    public static class TestCommands 
+    private static class TestCommands 
     {
         private class SpawnCubeCommand : ICommand
         {

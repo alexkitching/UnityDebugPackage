@@ -42,6 +42,8 @@ public interface IConsoleHandler
     void Close();
 
     void OnWriteToConsole(string a_value, Color a_color);
+
+    void OnVisualChange(ref VisualSchemeData a_data);
 }
 
 public static partial class KDebug
@@ -62,16 +64,23 @@ public static partial class KDebug
             }
         }
 
-        private static bool s_Initialised = false;
-
         private static readonly KTrie s_Tree = new KTrie();
         private static List<ICommand> s_RegisteredCommands = null;
         private static IConsoleHandler s_Handler = null;
 
         // Keybindings
-        private static KeyCode s_OpenCloseCode = KeyCode.BackQuote;
-        public static KeyCode ToggleOpenKeyCode => s_OpenCloseCode;
+        public static KeyCode ToggleOpenKeyCode
+        {
+            get
+            {
+                if (s_data != null)
+                {
+                    return s_data.ConsoleData.KeyCodeToggleOpen;
+                }
 
+                return KeyCode.None;
+            }
+        }
 
         private static KQueue<ConsoleHistory> s_ConsoleHistory = null;
         private static KQueue<ConsoleHistory> s_CommandHistory = null;
@@ -85,26 +94,33 @@ public static partial class KDebug
             set => s_CommandContext = value;
         }
 
-        // Public Methods
-        public static bool Initialise(IConsoleHandler a_handler, int a_maxCommands, int a_maxHistory, KeyCode a_ToggleOpenCode = KeyCode.BackQuote)
+        private static bool Initialise(IConsoleHandler a_handler)
         {
             if (s_Initialised)
                 return true;
 
-            s_RegisteredCommands = new List<ICommand>(a_maxCommands);
+            s_RegisteredCommands = new List<ICommand>(s_data.ConsoleData.MaxCommands);
             s_Handler = a_handler;
 
-            s_ConsoleHistory = new KQueue<ConsoleHistory>(a_maxHistory);
-            s_CommandHistory = new KQueue<ConsoleHistory>(a_maxHistory);
-            s_MaxHistory = a_maxHistory;
+            s_ConsoleHistory = new KQueue<ConsoleHistory>(s_data.ConsoleData.MaxHistory);
+            s_CommandHistory = new KQueue<ConsoleHistory>(s_data.ConsoleData.MaxHistory);
+            s_MaxHistory = s_data.ConsoleData.MaxHistory;
 
             if(s_Handler.IsOpen)
                 s_Handler.Close();
 
-            s_OpenCloseCode = a_ToggleOpenCode;
-
+            s_Handler.OnVisualChange(ref s_data.VisualData);
 
             return s_Initialised = true;
+        }
+
+        private static void Reset()
+        {
+            s_RegisteredCommands = null;
+            s_Handler = null;
+            s_ConsoleHistory = null;
+            s_CommandHistory = null;
+            s_MaxHistory = 0;
         }
 
         public static bool Exists(string a_string)

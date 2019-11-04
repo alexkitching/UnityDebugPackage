@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
+public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
 {
     [SerializeField] 
     private RectTransform _displayTemplate = null;
@@ -17,11 +17,7 @@ public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
 
     void Awake()
     {
-        while (_debugDisplayObjects.Count < MAX_DISPLAYS)
-        {
-            _debugDisplayObjects.Push(Instantiate(_displayTemplate, _poolRoot.transform));
-        }
-        KDebugDisplayManager.Initialise(this);
+        WarmupPool();
     }
 
     // Start is called before the first frame update
@@ -42,6 +38,11 @@ public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
     
     public void AddDisplay(DebugDisplay a_display)
     {
+        if (_debugDisplayObjects.Count + _activeDisplays.Count == 0)
+        {
+            WarmupPool();
+        }
+
         RectTransform rect = _debugDisplayObjects.Pop();
         a_display.OnAdd(rect);
         rect.transform.SetParent(_displayRoot.transform);
@@ -62,5 +63,29 @@ public class KDebugDisplayHandler : MonoBehaviour, DebugDisplayHandler
         a_display.OnRemove();
         _debugDisplayObjects.Push(rect);
     }
-  
+
+    private void WarmupPool()
+    {
+        while (_debugDisplayObjects.Count < MAX_DISPLAYS)
+        {
+            RectTransform trans = Instantiate(_displayTemplate, _poolRoot.transform);
+            _debugDisplayObjects.Push(trans);
+        }
+    }
+
+    public void OnVisualChange(ref VisualSchemeData a_data)
+    {
+        for (int i = 0; i < _activeDisplays.Count; ++i)
+        {
+            DebugDisplay disp = _activeDisplays[i];
+            if (disp != null)
+            {
+                UnityEngine.UI.Image img = disp.GetRect.GetComponent<UnityEngine.UI.Image>();
+                if (img)
+                {
+                    img.color = a_data.PrimaryColor;
+                }
+            }
+        }
+    }
 }

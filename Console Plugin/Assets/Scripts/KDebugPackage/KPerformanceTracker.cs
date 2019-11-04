@@ -2,18 +2,6 @@
 
 public static partial class KDebug
 {
-    private static IPerformanceTracker s_Tracker = null;
-
-    public static void SetPerformanceTracker(IPerformanceTracker a_tracker)
-    {
-        s_Tracker = a_tracker;
-    }
-
-    public static IPerformanceTracker Tracker
-    {
-        get => s_Tracker;
-    }
-
     public interface IPerformanceTracker
     {
         float GetFPS { get; }
@@ -59,7 +47,13 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
 
     void Awake()
     {
-        KDebug.SetPerformanceTracker(this);
+        Application.targetFrameRate = 300;
+    }
+
+    void Start()
+    {
+        PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
+        KDebug.DisplayManager.RegisterDisplayAsPrimaryTab(performanceDisplay);
     }
 
     // Update is called once per frame

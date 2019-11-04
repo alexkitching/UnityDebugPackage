@@ -48,6 +48,9 @@ public class PerformanceDisplay : DebugDisplay
 
     public override void OnGUI()
     {
+        if (KDebug.Tracker == null)
+            return;
+
         // Draw Title
         DrawText("Performance Display", true);
 

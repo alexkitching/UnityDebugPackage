@@ -29,11 +29,11 @@ public class ConsoleInputListener : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.PageUp))
         {
-            KDebugDisplayManager.CyclePrimaryTab(1);
+            KDebug.DisplayManager.CyclePrimaryTab(1);
         }
         else if (Input.GetKeyDown(KeyCode.PageDown))
         {
-            KDebugDisplayManager.CyclePrimaryTab(-1);
+            KDebug.DisplayManager.CyclePrimaryTab(-1);
         }
     }
 }
