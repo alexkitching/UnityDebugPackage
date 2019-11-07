@@ -32,8 +32,8 @@ public class PerformanceDisplay : DebugDisplay
         _LongFrameIcon = LongFrameIcon;
     }
 
-    private Texture2D _GCIcon;
-    private Texture2D _LongFrameIcon;
+    private readonly Texture2D _GCIcon;
+    private readonly Texture2D _LongFrameIcon;
     private const int cShowForFrames = 10;
     private int _GCFrameCounter = 0;
     private int _LongFrameCounter = 0;

@@ -13,6 +13,10 @@ public abstract class DebugDisplay
     private float _yOffset = 0;
 
     private readonly GUIStyle _Style = GUIStyle.none;
+    private Color _defaultFontColour = Color.black;
+
+    private Color DefaultFontColour => _parent?.DefaultFontColour ?? _defaultFontColour;
+
     private float _Padding = 10f;
 
     protected static Vector2 s_DefaultDisplaySize = new Vector2(40, 40);
@@ -46,9 +50,19 @@ public abstract class DebugDisplay
     }
 
     private readonly GUIContent _content = new GUIContent();
-    protected void DrawText(string a_text, bool a_bBold = false)
+    protected void DrawText(string a_text, bool a_bBold = false, Color? a_color = null)
     {
         _Style.fontStyle = (FontStyle)(a_bBold ? 1 : 0);
+        if (a_color.HasValue)
+        {
+            _Style.normal.textColor = a_color.Value;
+        }
+        else
+        {
+            _Style.normal.textColor = DefaultFontColour;
+        }
+
+
         _content.text = a_text;
         Vector2 size = _Style.CalcSize(_content);
 
@@ -99,6 +113,11 @@ public abstract class DebugDisplay
             baseOffset = _parent.GetVerticalOffset();
         }
         return baseOffset + _yOffset;
+    }
+
+    public void SetDefaultFontColour(Color a_colour)
+    {
+        _defaultFontColour = a_colour;
     }
 
 }

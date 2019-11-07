@@ -8,7 +8,7 @@ public partial class KDebug
     {
         void AddDisplay(DebugDisplay a_display);
         void RemoveDisplay(DebugDisplay a_display);
-        void OnVisualChange(ref VisualSchemeData a_data);
+        void OnVisualChange();
     }
 
     public class TestDisplay : DebugDisplay

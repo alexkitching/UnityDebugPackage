@@ -20,7 +20,7 @@ public class ConsoleInputListener : MonoBehaviour
         //    {
         //        Debug.Log("Keycode: " + (KeyCode)i + " down!");
         //    }
-        //}
+        //}`
 
         if (Input.GetKeyDown(KDebug.Console.ToggleOpenKeyCode))
         {

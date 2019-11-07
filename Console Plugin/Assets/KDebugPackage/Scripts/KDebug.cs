@@ -12,6 +12,8 @@ public partial class KDebug
     private static IPerformanceTracker s_Tracker = null;
     public static IPerformanceTracker Tracker => s_Tracker;
 
+    public static VisualSchemeData GetVisualData => s_data.VisualData;
+
     public static bool Initialise(KDebugData a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, DisplayHandler a_displayHandler)
     {
         s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");

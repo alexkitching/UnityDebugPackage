@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public struct VisualSchemeData
+public class VisualSchemeData
 {
     public Color PrimaryColor;
     public Color SecondaryColor;
@@ -17,7 +17,7 @@ public struct VisualSchemeData
         SecondaryColor = new Color(66f / 255f, 64f / 255f, 128f / 255f, 255f / 255f),
         PrimaryTextColor = Color.white,
         SecondaryTextColor = Color.grey,
-        PredictionTextAlpha   =  215f / 255f
+        PredictionTextAlpha   =  120f / 255f
     };
 }
 

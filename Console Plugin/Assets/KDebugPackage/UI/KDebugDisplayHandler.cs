@@ -20,12 +20,6 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
         WarmupPool();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
     // Update is called once per frame
     void OnGUI()
     {
@@ -44,10 +38,13 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
         }
 
         RectTransform rect = _debugDisplayObjects.Pop();
+
         a_display.OnAdd(rect);
         rect.transform.SetParent(_displayRoot.transform);
         rect.gameObject.SetActive(true);
         _activeDisplays.Add(a_display);
+
+        ApplyVisualsToDisplay(a_display);
         a_display.OnShow();
     }
 
@@ -73,19 +70,27 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
         }
     }
 
-    public void OnVisualChange(ref VisualSchemeData a_data)
+    public void OnVisualChange()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
             DebugDisplay disp = _activeDisplays[i];
-            if (disp != null)
-            {
-                UnityEngine.UI.Image img = disp.GetRect.GetComponent<UnityEngine.UI.Image>();
-                if (img)
-                {
-                    img.color = a_data.PrimaryColor;
-                }
-            }
+            ApplyVisualsToDisplay(disp);
         }
     }
+
+    private void ApplyVisualsToDisplay(DebugDisplay a_display)
+    {
+        if (a_display == null) 
+            return;
+
+        UnityEngine.UI.Image img = a_display.GetRect.GetComponent<UnityEngine.UI.Image>();
+        if (img)
+        {
+            img.color = KDebug.GetVisualData.PrimaryColor;
+        }
+
+        a_display.SetDefaultFontColour(KDebug.GetVisualData.PrimaryTextColor);
+    }
+
 }

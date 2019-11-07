@@ -43,7 +43,7 @@ public interface IConsoleHandler
 
     void OnWriteToConsole(string a_value, Color a_color);
 
-    void OnVisualChange(ref VisualSchemeData a_data);
+    void OnVisualChange();
 }
 
 public static partial class KDebug
@@ -109,7 +109,7 @@ public static partial class KDebug
             if(s_Handler.IsOpen)
                 s_Handler.Close();
 
-            s_Handler.OnVisualChange(ref s_data.VisualData);
+            s_Handler.OnVisualChange();
 
             return s_Initialised = true;
         }

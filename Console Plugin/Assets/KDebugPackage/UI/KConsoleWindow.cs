@@ -184,6 +184,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         else
         {
             _inputField.SetTextWithoutNotify("");
+            SetPredictionText("Type a Command...");
         }
         KDebug.Console.DumpHistoryToHandler();
         bJustEnabled = true;
@@ -345,9 +346,9 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     }
 
     private void SetPredictionText(string a_value)
-        {
-            _predictionText.text = a_value;
-        }
+    {
+        _predictionText.text = a_value;
+    }
 
     private void AwakeHistoryItemPool()
     {
@@ -497,14 +498,14 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
     }
 
-    public void OnVisualChange(ref VisualSchemeData a_data)
+    public void OnVisualChange()
     {
         for (int i = 0; i < primaryImages.Length; ++i)
         {
             Image img = primaryImages[i];
             if (img != null)
             {
-                img.color = a_data.PrimaryColor;
+                img.color = KDebug.GetVisualData.PrimaryColor;
             }
         }
 
@@ -513,7 +514,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             Image img = secondaryImages[i];
             if (img != null)
             {
-                img.color = a_data.SecondaryColor;
+                img.color = KDebug.GetVisualData.SecondaryColor;
             }
         }
 
@@ -522,10 +523,13 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             TextMeshProUGUI text = primaryText[i];
             if (text != null)
             {
-                text.color = a_data.PrimaryTextColor;
+                text.color = KDebug.GetVisualData.PrimaryTextColor;
             }
         }
 
-        _predictionTextColour = new Color(a_data.PrimaryTextColor.r, a_data.PrimaryTextColor.g, a_data.PrimaryTextColor.b, a_data.PredictionTextAlpha);
+        Color predictionColour = KDebug.GetVisualData.PrimaryTextColor;
+        predictionColour.a = KDebug.GetVisualData.PredictionTextAlpha;
+
+        _predictionTextColour = predictionColour;
     }
 }
