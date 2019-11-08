@@ -192,9 +192,32 @@ public partial class KDebug
                 }
                 return string.Empty;
             }
-    
+
+            private GameObject noclipObj = null;
             CommandResult ICommand.Run(params string[] a_args)
             {
+                if (a_args.Length == 1 &&
+                    bool.TryParse(a_args[0], out bool value))
+                {
+                    if (value)
+                    {
+                        Transform playerTransform = ExampleStats.s_Transform;
+
+                        if (playerTransform != null)
+                        {
+                            noclipObj = GameObject.Instantiate(playerTransform.gameObject);
+                            noclipObj.AddComponent<NoclipCamera>();
+                        }
+                    }
+                    else
+                    {
+                        if (noclipObj != null)
+                        {
+                            GameObject.Destroy(noclipObj);
+                        }
+                    }
+                }
+
                 return CommandResult.Default("Success");
             }
         }
