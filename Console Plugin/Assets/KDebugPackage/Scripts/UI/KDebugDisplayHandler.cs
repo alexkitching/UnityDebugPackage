@@ -27,6 +27,7 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
         {
             DebugDisplay display = _activeDisplays[i];
             display.OnGUI();
+            display.OnPostGUI();
         }
     }
     

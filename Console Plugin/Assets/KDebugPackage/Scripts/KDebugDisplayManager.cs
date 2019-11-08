@@ -15,7 +15,7 @@ public partial class KDebug
     {
         public override void OnGUI()
         {
-            DrawText("Test Look at this amazing test!");
+            DrawText("Test Display.");
         }
     }
 
@@ -32,9 +32,6 @@ public partial class KDebug
 
             s_Handler = a_handler;
             s_Handler.AddDisplay(s_PrimaryDisplay);
-
-            RegisterDisplayAsPrimaryTab<KDebug.TestDisplay>();
-
             return true;
         }
 

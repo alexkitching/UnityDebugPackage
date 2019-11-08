@@ -215,28 +215,7 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8068086073515363680, guid: f72df5558ef79ae4ab1964e6ec8b35f8,
-        type: 3}
-      propertyPath: m_Name
-      value: CANVAS_DebugDisplay
-      objectReference: {fileID: 0}
-    - target: {fileID: 8068086074487307662, guid: f72df5558ef79ae4ab1964e6ec8b35f8,
-        type: 3}
-      propertyPath: m_Name
-      value: CANVAS_KConsole
-      objectReference: {fileID: 0}
-    - target: {fileID: 8068086074487307662, guid: f72df5558ef79ae4ab1964e6ec8b35f8,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8068086073472514347, guid: f72df5558ef79ae4ab1964e6ec8b35f8,
-        type: 3}
-      propertyPath: m_Name
-      value: TEXT_InputText
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 8068086074089149612, guid: f72df5558ef79ae4ab1964e6ec8b35f8, type: 3}
+    m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f72df5558ef79ae4ab1964e6ec8b35f8, type: 3}
 --- !u!224 &4742945680723475889 stripped
 RectTransform:

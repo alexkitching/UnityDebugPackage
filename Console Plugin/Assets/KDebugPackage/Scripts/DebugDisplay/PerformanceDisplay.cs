@@ -61,6 +61,7 @@ public class PerformanceDisplay : DebugDisplay
             _GCFrameCounter != cShowForFrames)
         {
             _GCFrameCounter = cShowForFrames;
+            KDebug.Log("GCOccured at: " + System.DateTime.Now.Hour + ":" + System.DateTime.Now.Second + "." + System.DateTime.Now.Millisecond);
         }
 
         if (KDebug.Tracker.WasLongFrame &&

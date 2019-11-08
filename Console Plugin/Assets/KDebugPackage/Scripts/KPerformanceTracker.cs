@@ -54,6 +54,17 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
     {
         PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
         KDebug.DisplayManager.RegisterDisplayAsPrimaryTab(performanceDisplay);
+        KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<ExampleStatsDisplay>();
+        //KDebug.TestDisplay testDisplay = KDebug.DisplayManager.RegisterDebugDisplay<KDebug.TestDisplay>();
+
+        //Resolution res = Screen.currentResolution;
+        //
+        //Vector2 pos = testDisplay.GetRect.anchoredPosition;
+        //
+        //pos.y -= 180f;
+        //
+        //testDisplay.GetRect.anchoredPosition = pos;
+
     }
 
     // Update is called once per frame

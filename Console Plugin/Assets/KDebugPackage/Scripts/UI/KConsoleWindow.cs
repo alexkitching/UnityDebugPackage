@@ -17,7 +17,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     [SerializeField] 
     private TMPro.TextMeshProUGUI _inputText = null;
     [SerializeField] 
-    private TMPro.TMP_InputField _inputField = null;
+    private TMP_InputField _inputField = null;
     private int _currentInputLength = 0;
 
     // Prediction
@@ -25,9 +25,14 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private Color _predictionTextColour = Color.gray;
     private TMPro.TextMeshProUGUI _predictionText = null;
     private RectTransform _predictionTransform = null;
+    [SerializeField]
+    private PredictionItem _predictionItemTemplate = null;
+    [SerializeField]
+    private RectTransform _predictionItemRoot = null;
+    private List<PredictionItem> _predictionItems = null;
 
     // Commands
-    private List<ICommand> _predictionCommands = new List<ICommand>(5);
+    private List<ICommand> _predictionCommands = null;
     private ICommand _currentCommand = null;
 
     // History
@@ -63,10 +68,17 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private Image[] secondaryImages = null;
     [SerializeField]
     private TextMeshProUGUI[] primaryText = null;
+    [SerializeField]
+    private TextMeshProUGUI[] secondaryText = null;
 
     private bool bJustEnabled = false;
 
     public bool IsOpen => gameObject.activeSelf;
+
+    private Vector3? _lastRayDirection = null;
+    private int _lastRaySelection = 0;
+
+    #region Mono Functions
 
     private void Awake()
     {
@@ -75,8 +87,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         AwakeHistoryItemPool();
 
         _inputField.onValidateInput += OnValidateInput;
-
-        
 
         Transform parent = _inputField.transform.parent;
         if (parent)
@@ -88,38 +98,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 caretTransform.SetAsLastSibling();
             }
         }
-    }
-
-
-    /// <summary>
-    /// Creates the Predictive Text Object as the last sibling
-    /// </summary>
-    private void CreatePredictionObject()
-    {
-        GameObject predictionGO = Instantiate(_inputText.gameObject, _inputText.transform.parent);
-        predictionGO.transform.SetAsLastSibling();
-        predictionGO.name = "TXT_Prediction";
-        _predictionText = predictionGO.GetComponent<TMPro.TextMeshProUGUI>();
-        SetPredictionText("");
-        _predictionTransform = (RectTransform)predictionGO.transform;
-        _predictionText.color = _predictionTextColour;
-        UpdatePredictionObjectOffset();
-    }
-
-    /// <summary>
-    /// Updates the offset of the predicted text.
-    /// </summary>
-    private void UpdatePredictionObjectOffset()
-    {
-        Vector2 position = new Vector2(0f,_predictionTransform.anchoredPosition.y);
-
-        if (string.IsNullOrEmpty(_inputField.text) == false)
-        {
-            Vector2 values = _inputText.GetPreferredValues();
-            position = new Vector2(values.x, _predictionTransform.anchoredPosition.y);
-        }
-            
-        _predictionTransform.anchoredPosition = position;
     }
 
     private void Update()
@@ -141,9 +119,9 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 {
                     // Complete Command
                     input += _predictionText.text;
-                    _inputField.SetTextWithoutNotify(input);
-                    _inputField.caretPosition = input.Length;
-                    OnInputStringChanged();
+                    //_inputField.SetTextWithoutNotify(input);
+                    //_inputField.caretPosition = input.Length;
+                    //OnInputStringChanged();
                 }
             }
             
@@ -190,6 +168,101 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         bJustEnabled = true;
     }
 
+    private void OnDisable()
+    {
+        while (_HistoryQueue.Count > 0)
+        {
+            TextMeshProUGUI history = _HistoryQueue.Dequeue();
+            _HistoryItemPool.Push(history);
+        }
+    }
+    #endregion
+
+    #region Prediction Functions
+    /// <summary>
+    /// Creates the Predictive Text Object as the last sibling
+    /// </summary>
+    private void CreatePredictionObject()
+    {
+        // Create Prediction Object
+        GameObject predictionGO = Instantiate(_inputText.gameObject, _inputText.transform.parent);
+        predictionGO.transform.SetAsLastSibling();
+        predictionGO.name = "TXT_Prediction";
+        _predictionText = predictionGO.GetComponent<TMPro.TextMeshProUGUI>();
+        SetPredictionText("");
+        _predictionTransform = (RectTransform)predictionGO.transform;
+        _predictionText.color = _predictionTextColour;
+
+        // Update its position
+        UpdatePredictionObjectOffset();
+
+        // Calculate Max Prediction Items our root can hold.
+        RectTransform itemRect = _predictionItemTemplate.transform as RectTransform;
+        if (itemRect != null)
+        {
+            float itemSize = itemRect.sizeDelta.y;
+
+            float rootSize = _predictionItemRoot.rect.size.y;
+
+            int maxItems = Mathf.FloorToInt(rootSize / itemSize);
+
+            _predictionItems = new List<PredictionItem>(maxItems);
+            _predictionCommands = new List<ICommand>(maxItems + 1);
+            for (int i = 0; i < maxItems; ++i)
+            {
+                PredictionItem item = Instantiate(_predictionItemTemplate, _predictionItemRoot);
+
+                Color color = KDebug.GetVisualData.PrimaryColor;
+                bool IsEven = i % 2 == 0;
+                float alpha = IsEven ? 0.85f : 1f;
+                color.a = alpha;
+                item.Image.color = color;
+
+                item.Text.color = KDebug.GetVisualData.PrimaryTextColor;
+
+                _predictionItems.Add(item);
+            }
+        }
+        else
+        {
+            _predictionCommands = new List<ICommand>(3);
+            throw new NullReferenceException("Item Rect is null!");
+        }
+    }
+
+    /// <summary>
+    /// Updates the offset of the predicted text.
+    /// </summary>
+    private void UpdatePredictionObjectOffset()
+    {
+        Vector2 position = new Vector2(0f,_predictionTransform.anchoredPosition.y);
+
+        if (string.IsNullOrEmpty(_inputField.text) == false)
+        {
+            Vector2 values = _inputText.GetPreferredValues();
+            position = new Vector2(values.x, _predictionTransform.anchoredPosition.y);
+        }
+            
+        _predictionTransform.anchoredPosition = position;
+    }
+
+    private void SetPredictionText(string a_value)
+    {
+        _predictionText.text = a_value;
+    }
+
+
+    private void DisablePredictionItems()
+    {
+        for (int i = 0; i < _predictionItems.Count; ++i)
+        {
+            PredictionItem item = _predictionItems[i];
+            item.gameObject.SetActive(false);
+        }
+    }
+
+    #endregion
+
     private void OnPostEnable()
     {
         _inputField.gameObject.SetActive(true);
@@ -199,17 +272,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         bJustEnabled = false;
     }
 
-    private void OnDisable()
-    {
 
-        while (_HistoryQueue.Count > 0)
-        {
-            TextMeshProUGUI history = _HistoryQueue.Dequeue();
-            _HistoryItemPool.Push(history);
-        }
-    }
-
-    #region InputFieldCallbacks
+    #region Input Field Callbacks
     public void OnInputStringChanged()
     {
         Debug.Log("OnInputStringChanged");
@@ -217,6 +281,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
         string[] inputStrings = input.Split(' ');
         _currentInputLength = inputStrings.Length;
+
+        DisablePredictionItems();
 
         if (string.IsNullOrWhiteSpace(input))
         {
@@ -238,6 +304,20 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 Debug.Log(predictionText);
                 SetPredictionText(predictionText);
                 _currentCommand = firstMatch;
+
+                if (_predictionCommands.Count > 1)
+                {
+                    for (int i = 0; i < _predictionItems.Count; ++i)
+                    {
+                        PredictionItem item = _predictionItems[i];
+                        if (i + 1 < _predictionCommands.Count)
+                        {
+                            ICommand predictedCommand = _predictionCommands[_predictionCommands.Count - 1 - i];
+                            item.Text.text = predictedCommand.Name;
+                            item.gameObject.SetActive(true);
+                        }
+                    }
+                }
             }
             else
             {
@@ -268,11 +348,12 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 ++ArgIndex;
             }
 
-            Debug.Assert(_currentCommand != null, "Current Command is null!");
-
-            string argName = _currentCommand.GetArgName(ArgIndex - 1);
-            argName = argName.Insert(0, " ");
-            SetPredictionText(argName);
+            if (_currentCommand != null)
+            {
+                string argName = _currentCommand.GetArgName(ArgIndex - 1);
+                argName = argName.Insert(0, " ");
+                SetPredictionText(argName);
+            }
         }
 
     }
@@ -335,6 +416,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     #endregion
 
+    #region IConsoleHandler Functions
     public void Open()
     {
         gameObject.SetActive(true);
@@ -345,37 +427,48 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         gameObject.SetActive(false);
     }
 
-    private void SetPredictionText(string a_value)
+    public void OnVisualChange()
     {
-        _predictionText.text = a_value;
-    }
-
-    private void AwakeHistoryItemPool()
-    {
-        // Calculate Max Items
-        float height = _HistoryRect.rect.height;
-        float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
-        float fMaxItems = height / itemMinHeight;
-        int iMaxItems = Mathf.FloorToInt(fMaxItems);
-
-        // Create Pool Root
-        GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
-        historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
-        _HistoryItemPoolRoot = historyItemPool.transform;
-        _HistoryItemPoolRoot.SetAsLastSibling();
-
-        _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
-        _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
-
-        for (int i = 0; i < iMaxItems; ++i)
+        for (int i = 0; i < primaryImages.Length; ++i)
         {
-            TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
-                                                    historyItemPool.transform)
-                                                    .GetComponent<TextMeshProUGUI>();
-
-            Debug.Assert(textItem != null, "Failed to Clone Text Item");
-            _HistoryItemPool.Push(textItem);
+            Image img = primaryImages[i];
+            if (img != null)
+            {
+                img.color = KDebug.GetVisualData.PrimaryColor;
+            }
         }
+
+        for (int i = 0; i < secondaryImages.Length; ++i)
+        {
+            Image img = secondaryImages[i];
+            if (img != null)
+            {
+                img.color = KDebug.GetVisualData.SecondaryColor;
+            }
+        }
+
+        for (int i = 0; i < primaryText.Length; ++i)
+        {
+            TextMeshProUGUI text = primaryText[i];
+            if (text != null)
+            {
+                text.color = KDebug.GetVisualData.PrimaryTextColor;
+            }
+        }
+
+        for (int i = 0; i < secondaryText.Length; ++i)
+        {
+            TextMeshProUGUI text = secondaryText[i];
+            if (text != null)
+            {
+                text.color = KDebug.GetVisualData.SecondaryTextColor;
+            }
+        }
+
+        Color predictionColour = KDebug.GetVisualData.SecondaryTextColor;
+        predictionColour.a = KDebug.GetVisualData.PredictionTextAlpha;
+
+        _predictionTextColour = predictionColour;
     }
 
     public void OnWriteToConsole(string a_value, Color a_printColor)
@@ -419,8 +512,36 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _HistoryQueue.Enqueue(newHistory);
     }
 
-    private Vector3? _lastRayDirection = null;
-    private int _lastRaySelection = 0;
+    #endregion
+
+    private void AwakeHistoryItemPool()
+    {
+        // Calculate Max Items
+        float height = _HistoryRect.rect.height;
+        float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
+        float fMaxItems = height / itemMinHeight;
+        int iMaxItems = Mathf.CeilToInt(fMaxItems);
+
+        // Create Pool Root
+        GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
+        historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
+        _HistoryItemPoolRoot = historyItemPool.transform;
+        _HistoryItemPoolRoot.SetAsLastSibling();
+
+        _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
+        _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
+
+        for (int i = 0; i < iMaxItems; ++i)
+        {
+            TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
+                                                    historyItemPool.transform)
+                                                    .GetComponent<TextMeshProUGUI>();
+
+            Debug.Assert(textItem != null, "Failed to Clone Text Item");
+            _HistoryItemPool.Push(textItem);
+        }
+    }
+
     private void RaycastUpdateContext()
     {
         RaycastHit[] hit = new RaycastHit[10];
@@ -498,38 +619,5 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
     }
 
-    public void OnVisualChange()
-    {
-        for (int i = 0; i < primaryImages.Length; ++i)
-        {
-            Image img = primaryImages[i];
-            if (img != null)
-            {
-                img.color = KDebug.GetVisualData.PrimaryColor;
-            }
-        }
-
-        for (int i = 0; i < secondaryImages.Length; ++i)
-        {
-            Image img = secondaryImages[i];
-            if (img != null)
-            {
-                img.color = KDebug.GetVisualData.SecondaryColor;
-            }
-        }
-
-        for (int i = 0; i < primaryText.Length; ++i)
-        {
-            TextMeshProUGUI text = primaryText[i];
-            if (text != null)
-            {
-                text.color = KDebug.GetVisualData.PrimaryTextColor;
-            }
-        }
-
-        Color predictionColour = KDebug.GetVisualData.PrimaryTextColor;
-        predictionColour.a = KDebug.GetVisualData.PredictionTextAlpha;
-
-        _predictionTextColour = predictionColour;
-    }
+   
 }

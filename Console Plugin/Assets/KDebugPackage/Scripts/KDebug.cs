@@ -14,11 +14,23 @@ public partial class KDebug
 
     public static VisualSchemeData GetVisualData => s_data.VisualData;
 
+    private static readonly string s_logFilePath = UnityEngine.Application.persistentDataPath + "/" + "KDebugLog.log";
+
+    private static ILog s_logFile = null;
+
     public static bool Initialise(KDebugData a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, DisplayHandler a_displayHandler)
     {
         s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");
 
         bool bResult = false;
+
+        // Init Log
+        bResult = InitialiseLog();
+        if (bResult == false)
+        {
+            Reset();
+            return false;
+        }
 
         // Init Console
         bResult = InitialiseConsole(a_handler);
@@ -43,6 +55,11 @@ public partial class KDebug
         s_Tracker = a_tracker;
         s_Initialised = true;
         return true;
+    }
+
+    public static void Shutdown()
+    {
+        Reset();
     }
 
     private static bool InitialiseConsole(IConsoleHandler a_handler)
@@ -71,10 +88,26 @@ public partial class KDebug
         return (bool)dispMgrMthdInfo?.Invoke(null, new object[] {a_displayHandler});
     }
 
+    private static bool InitialiseLog()
+    {
+        #if UNITY_STANDALONE
+        s_logFile = new KWinLog();
+        #else
+        throw new NotImplementedException();
+        #endif
+
+        return s_logFile.Initialise(s_logFilePath);
+    }
+
     private static void Reset()
     {
         s_Initialised = false;
         s_data = null;
+
+        s_logFile?.Shutdown();
+
+        s_logFile = null;
+
         Type consoleType =  typeof(Console);
         MethodInfo consoleResetMethodInfo =
             consoleType.GetMethod(  "Reset",
@@ -84,4 +117,12 @@ public partial class KDebug
 
         consoleResetMethodInfo?.Invoke(null, null);
     }
+
+    public static void Log(string a_value)
+    {
+        Console.WriteTo(a_value);
+        s_logFile.WriteLine(a_value);
+    }
+
+
 }
