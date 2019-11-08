@@ -199,7 +199,7 @@ public partial class KDebug
                 if (a_args.Length == 1 &&
                     bool.TryParse(a_args[0], out bool value))
                 {
-                    if (value)
+                    if (value && noclipObj == null)
                     {
                         Transform playerTransform = ExampleStats.s_Transform;
 
@@ -209,12 +209,9 @@ public partial class KDebug
                             noclipObj.AddComponent<NoclipCamera>();
                         }
                     }
-                    else
+                    else if(noclipObj != null)
                     {
-                        if (noclipObj != null)
-                        {
-                            GameObject.Destroy(noclipObj);
-                        }
+                        GameObject.Destroy(noclipObj);
                     }
                 }
 
