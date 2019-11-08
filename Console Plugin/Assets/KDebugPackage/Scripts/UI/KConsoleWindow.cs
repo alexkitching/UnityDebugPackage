@@ -545,7 +545,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private void RaycastUpdateContext()
     {
         RaycastHit[] hit = new RaycastHit[10];
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray ray = ExampleStats.s_ActiveCam.ScreenPointToRay(Input.mousePosition);
         
         int hitCount = Physics.RaycastNonAlloc(ray, hit, 1000000, _RaycastLayers.value);
 

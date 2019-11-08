@@ -212,6 +212,11 @@ public static partial class KDebug
             }
         }
 
+        public static bool IsOpen()
+        {
+            return s_Handler.IsOpen;
+        }
+
         public static void RunCommand(ICommand a_command, params string[] a_args)
         {
             CommandResult result = a_command.Run(a_args);

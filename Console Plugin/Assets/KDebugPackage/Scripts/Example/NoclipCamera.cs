@@ -7,15 +7,21 @@ public class NoclipCamera : MonoBehaviour
     private const float c_rot_speed = 3f;
     private const float c_move_speed = 5f;
     private const float c_shiftMulti = 2f;
+
+    private Camera cam = null;
     // Start is called before the first frame update
     void Start()
     {
-        
+        cam = GetComponent<Camera>();
+        ExampleStats.s_OverrideCam = cam;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (KDebug.Console.IsOpen())
+            return;
+
        UpdateMovement();
        UpdateMouseLook();
     }
@@ -69,5 +75,10 @@ public class NoclipCamera : MonoBehaviour
 
 
         transform.Translate(new Vector3(x, y, z), Space.Self);
+    }
+
+    private void OnDestroy()
+    {
+        ExampleStats.s_OverrideCam = null;
     }
 }
