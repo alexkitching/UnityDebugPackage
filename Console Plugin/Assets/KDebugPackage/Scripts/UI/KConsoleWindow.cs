@@ -24,6 +24,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     [Header("Prediction")]
     private Color _predictionTextColour = Color.gray;
     private TMPro.TextMeshProUGUI _predictionText = null;
+
     private RectTransform _predictionTransform = null;
     [SerializeField]
     private PredictionItem _predictionItemTemplate = null;
@@ -277,12 +278,10 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     public void OnInputStringChanged()
     {
         Debug.Log("OnInputStringChanged");
+        DisablePredictionItems();
         string input = _inputField.text;
-
         string[] inputStrings = input.Split(' ');
         _currentInputLength = inputStrings.Length;
-
-        DisablePredictionItems();
 
         if (string.IsNullOrWhiteSpace(input))
         {
@@ -291,70 +290,9 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             return;
         }
 
-        bool IsCommand = _currentInputLength == 1;
+        ParseConsoleInput(inputStrings);
 
-        if (IsCommand)
-        {
-            bool bMatchFound  = KDebug.Console.LookupBestMatches(input, ref _predictionCommands);
-
-            if (bMatchFound)
-            {
-                ICommand firstMatch = _predictionCommands[0];
-                string predictionText = firstMatch.Name.Substring(input.Length, firstMatch.Name.Length - input.Length);
-                Debug.Log(predictionText);
-                SetPredictionText(predictionText);
-                _currentCommand = firstMatch;
-
-                if (_predictionCommands.Count > 1)
-                {
-                    for (int i = 0; i < _predictionItems.Count; ++i)
-                    {
-                        PredictionItem item = _predictionItems[i];
-                        if (i + 1 < _predictionCommands.Count)
-                        {
-                            ICommand predictedCommand = _predictionCommands[_predictionCommands.Count - 1 - i];
-                            item.Text.text = predictedCommand.Name;
-                            item.gameObject.SetActive(true);
-                        }
-                    }
-                }
-            }
-            else
-            {
-                _currentCommand = null;
-                SetPredictionText(string.Empty);
-            }
-            _predictionCommands.Clear();
-        }
-
-        bool bCommandComplete = _currentCommand != null && string.IsNullOrWhiteSpace(_predictionText.text);
-        bool bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(inputStrings[1]);
-
-        Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
         
-        if(bCommandComplete)// Arguments
-        {
-            string argName = _currentCommand.GetArgName(_currentInputLength - 1);
-            argName = argName.Insert(0, " ");
-            SetPredictionText(argName);
-        }
-        else if(_currentInputLength > 1)
-        {
-            int ArgIndex = _currentInputLength - 1;
-            bArgEmpty = string.IsNullOrWhiteSpace(inputStrings[ArgIndex]);
-
-            if (bArgEmpty == false)
-            {
-                ++ArgIndex;
-            }
-
-            if (_currentCommand != null)
-            {
-                string argName = _currentCommand.GetArgName(ArgIndex - 1);
-                argName = argName.Insert(0, " ");
-                SetPredictionText(argName);
-            }
-        }
 
     }
 
@@ -540,7 +478,115 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             Debug.Assert(textItem != null, "Failed to Clone Text Item");
             _HistoryItemPool.Push(textItem);
         }
+
+
+        // TODO REMOVE THIS 
+        KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<ParseDebugWindow>();
     }
+
+    public static bool IsCommand = false;
+    public static bool bCommandComplete = false;
+    public static bool bArgEmpty = false;
+    private class ParseDebugWindow : DebugDisplay
+    {
+        public override void OnShow()
+        {
+            base.OnShow();
+        }
+
+        public override void OnGUI()
+        {
+            DrawText("IsCommand: " + IsCommand);
+            DrawText("bCommandComplete: " + bCommandComplete);
+            DrawText("bArgEmpty: " + bArgEmpty);
+        }
+    }
+
+    private void ParseConsoleInput(params string[] a_input)
+    {
+        IsCommand = _currentInputLength == 1;
+
+        if (IsCommand) // Parse Command
+        {
+            bool bMatchFound = KDebug.Console.LookupBestMatches(a_input[0], ref _predictionCommands);
+
+            if (bMatchFound)
+            {
+                ICommand firstMatch = _predictionCommands[0];
+                string predictionText = firstMatch.Name.Substring(a_input[0].Length, firstMatch.Name.Length - a_input[0].Length);
+                SetPredictionText(predictionText);
+                _currentCommand = firstMatch;
+
+                if (_predictionCommands.Count > 1)
+                {
+                    for (int i = 0; i < _predictionItems.Count; ++i)
+                    {
+                        PredictionItem item = _predictionItems[i];
+                        if (i + 1 < _predictionCommands.Count)
+                        {
+                            ICommand predictedCommand = _predictionCommands[_predictionCommands.Count - 1 - i];
+                            item.Text.text = predictedCommand.Name;
+                            item.gameObject.SetActive(true);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                _currentCommand = null;
+                SetPredictionText(string.Empty);
+            }
+            _predictionCommands.Clear();
+        }
+
+        bCommandComplete = _currentCommand != null && a_input[0].Contains(_currentCommand.Name.ToLower());
+        bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(a_input[1]);
+
+        if(bCommandComplete == false && _currentInputLength > 1)
+        {
+            _currentCommand = null;
+            SetPredictionText(string.Empty);
+        }
+
+        Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
+
+        if(IsCommand && bCommandComplete == false)
+        {
+            return;
+        }
+
+
+        int ArgIndex = _currentInputLength - 1;
+        if(_currentInputLength > 1)
+        {
+            bool bPreviousEmpty = string.IsNullOrWhiteSpace(a_input[ArgIndex - 1]);
+            bArgEmpty = string.IsNullOrWhiteSpace(a_input[ArgIndex]);
+
+            if(bArgEmpty && bPreviousEmpty)
+            {
+                SetPredictionText("");
+                return;
+            }
+
+            if (bArgEmpty == false)
+            {
+                ++ArgIndex;
+            }
+        }
+        else
+        {
+            ++ArgIndex;
+        }
+
+        if (_currentCommand != null)
+        {
+            string argName = _currentCommand.GetArgName(ArgIndex - 1);
+            argName = argName.Insert(0, " ");
+            SetPredictionText(argName);
+        }
+    }
+
+    #region Context Functions
 
     private void RaycastUpdateContext()
     {
@@ -619,5 +665,5 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _contextRect.sizeDelta = new Vector2(newValues.x + 20f, _contextRect.sizeDelta.y);
     }
 
-   
+    #endregion
 }
