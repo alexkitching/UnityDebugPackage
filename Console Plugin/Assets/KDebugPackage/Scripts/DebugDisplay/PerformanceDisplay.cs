@@ -46,22 +46,18 @@ public class PerformanceDisplay : DebugDisplay
     private float stringValueUpdateInterval = 0.5f;
     private float stringValueUpdateTime = 0f;
 
-    public override void OnGUI()
+    public override void OnUpdate()
     {
         if (KDebug.Tracker == null)
             return;
 
-        // Draw Title
-        DrawText("Performance Display", true);
+        UpdatePerformanceValues();
 
-        DrawPerformanceValues();
-
-        // Draw FPS
         if (KDebug.Tracker.WasGCCollected &&
             _GCFrameCounter != cShowForFrames)
         {
             _GCFrameCounter = cShowForFrames;
-            KDebug.Log("GCOccured at: " + System.DateTime.Now.Hour + ":" + System.DateTime.Now.Second + "." + System.DateTime.Now.Millisecond);
+            KDebug.Log("GCOccured!");
         }
 
         if (KDebug.Tracker.WasLongFrame &&
@@ -70,20 +66,37 @@ public class PerformanceDisplay : DebugDisplay
             _LongFrameCounter = cShowForFrames;
         }
 
+        _GCFrameCounter--;
+        _LongFrameCounter--;
+    }
+
+    public override void OnGUI()
+    {
+        // Draw Title
+        DrawText("Performance Display", true);
+
+        if (KDebug.Tracker == null)
+        {
+            DrawText("MISSING KDebug.Tracker", true, Color.red);
+            return;
+        }
+
+        DrawPerformanceValues();
         DrawIcons();
     }
 
     private void DrawIcons()
     {
-        if (_GCFrameCounter-- > 0)
+        if (_GCFrameCounter > 0)
         {
             DrawGCIcon();
         }
 
-        if (_LongFrameCounter-- > 0)
+        if (_LongFrameCounter > 0)
         {
             DrawLongFrameIcon();
         }
+
         VerticalPad(IconSize);
     }
 
@@ -98,7 +111,7 @@ public class PerformanceDisplay : DebugDisplay
         GUI.DrawTexture(new Rect(IconSize + 15, GetVerticalOffset() + 0.5f * IconSize, IconSize, IconSize), _LongFrameIcon);
     }
 
-    private void DrawPerformanceValues()
+    private void UpdatePerformanceValues()
     {
         // Update Data
         stringValueUpdateTime -= Time.deltaTime;
@@ -110,7 +123,10 @@ public class PerformanceDisplay : DebugDisplay
             CurrentHeapValue = $"Current Heap Size: {KDebug.Tracker.GetHeapSize / 1000000} Mb";
             stringValueUpdateTime = stringValueUpdateInterval;
         }
+    }
 
+    private void DrawPerformanceValues()
+    {
         // Draw Text each frame
         DrawText(FPSStringValue);
         DrawText(CPUStringValue);

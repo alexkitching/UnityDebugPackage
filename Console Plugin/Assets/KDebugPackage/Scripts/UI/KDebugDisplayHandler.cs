@@ -21,6 +21,15 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
     }
 
     // Update is called once per frame
+    void Update()
+    {
+        for (int i = 0; i < _activeDisplays.Count; ++i)
+        {
+            DebugDisplay display = _activeDisplays[i];
+            display?.OnUpdate();
+        }
+    }
+
     void OnGUI()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)

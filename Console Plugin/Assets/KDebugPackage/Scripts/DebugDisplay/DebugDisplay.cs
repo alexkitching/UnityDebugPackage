@@ -42,6 +42,7 @@ public abstract class DebugDisplay
     }
 
     public virtual void OnShow() {}
+    public virtual void OnUpdate() { }
     public abstract void OnGUI();
 
     public void OnPostGUI()

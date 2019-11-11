@@ -18,6 +18,12 @@ public class DebugTabbedDisplay : DebugDisplay
         }
     }
 
+    public override void OnUpdate()
+    {
+        DebugDisplay tab = _tabs[_currentTab];
+        tab?.OnUpdate();
+    }
+
     public override void OnGUI()
     {
         StringBuilder.Clear();
@@ -31,7 +37,6 @@ public class DebugTabbedDisplay : DebugDisplay
         // Post
         OnPostGUI();
         tab?.OnPostGUI();
-        
     }
 
     public void NextTab()

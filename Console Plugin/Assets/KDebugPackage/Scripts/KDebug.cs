@@ -120,8 +120,14 @@ public partial class KDebug
 
     public static void Log(string a_value)
     {
-        Console.WriteTo(a_value);
-        s_logFile.WriteLine(a_value);
+        string finalLog = TimeStampLog(a_value);
+        Console.WriteTo(finalLog);
+        s_logFile.WriteLine(finalLog);
+    }
+
+    private static string TimeStampLog(string a_value)
+    {
+        return Timestamp.Now()+ " - " + a_value;
     }
 
 

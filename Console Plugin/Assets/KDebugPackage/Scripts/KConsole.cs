@@ -52,13 +52,20 @@ public static partial class KDebug
     {
         private struct ConsoleHistory
         {
-            public string Value;
+            public LogData Data;
             public ICommand Command;
             public Color PrintColor;
 
             public ConsoleHistory(string a_value, ICommand a_command, Color a_printColor)
             {
-                Value = a_value;
+                Data = new LogData(a_value);
+                Command = a_command;
+                PrintColor = a_printColor;
+            }
+
+            public ConsoleHistory(LogData a_data, ICommand a_command, Color a_printColor)
+            {
+                Data = a_data;
                 Command = a_command;
                 PrintColor = a_printColor;
             }
@@ -237,7 +244,6 @@ public static partial class KDebug
                 return;
 
             WriteToHistory(new ConsoleHistory(a_value, null, Color.white));
-
             s_Handler.OnWriteToConsole(a_value, Color.white);
         }
 
@@ -246,7 +252,7 @@ public static partial class KDebug
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
             {
                 ConsoleHistory history = s_ConsoleHistory[i];
-                s_Handler.OnWriteToConsole(history.Value, history.PrintColor);
+                s_Handler.OnWriteToConsole(history.Data.Value, history.PrintColor);
             }
         }
 
@@ -272,7 +278,7 @@ public static partial class KDebug
         {
             for (int i = 0; i < s_CommandHistory.Count; ++i)
             {
-                yield return s_CommandHistory[i].Value;
+                yield return s_CommandHistory[i].Data.LogString;
             }
         }
     }

@@ -17,7 +17,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     [SerializeField] 
     private TMPro.TextMeshProUGUI _inputText = null;
     [SerializeField] 
-    private TMP_InputField _inputField = null;
+    private TMP_InputField_ConsoleEdit _inputField = null;
     private int _currentInputLength = 0;
 
     // Prediction
@@ -42,6 +42,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private RectTransform _HistoryRect = null;
     [SerializeField]
     private TMPro.TextMeshProUGUI _HistoryTemplate = null;
+    [SerializeField]
+    private Image _HistoryImageBacker = null;
 
     private Transform _HistoryItemPoolRoot = null;
     private Stack<TMPro.TextMeshProUGUI> _HistoryItemPool = null;
@@ -149,6 +151,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     private void OnEnable()
     {
+        DisablePredictionItems();
+
         if (_rememberLastCommandOnOpen)
         {
             _inputField.SetTextWithoutNotify(_lastCommandName);
@@ -407,6 +411,14 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         predictionColour.a = KDebug.GetVisualData.PredictionTextAlpha;
 
         _predictionTextColour = predictionColour;
+
+        Color historyBackerColor = KDebug.GetVisualData.PrimaryColor;
+        historyBackerColor.a = KDebug.GetVisualData.HistoryBackerAlpha;
+
+        if (_HistoryImageBacker != null)
+        {
+            _HistoryImageBacker.color = historyBackerColor;
+        }
     }
 
     public void OnWriteToConsole(string a_value, Color a_printColor)
