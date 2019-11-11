@@ -31,6 +31,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     [SerializeField]
     private RectTransform _predictionItemRoot = null;
     private List<PredictionItem> _predictionItems = null;
+    private int _selectedPredictionItem = 0;
 
     // Commands
     private List<ICommand> _predictionCommands = null;
@@ -101,6 +102,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 caretTransform.SetAsLastSibling();
             }
         }
+
+        SelectPredictionItem(_selectedPredictionItem);
     }
 
     private void Update()
@@ -136,11 +139,11 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            // TODO Cycle Previous Commands?
+            CyclePredictionItem(1);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            // TODO Cycle Previous Commands?
+            CyclePredictionItem(-1);
         }
         else if (Input.GetMouseButtonUp(0))
         {
@@ -221,8 +224,9 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 bool IsEven = i % 2 == 0;
                 float alpha = IsEven ? 0.85f : 1f;
                 color.a = alpha;
-                item.Image.color = color;
-
+                
+                item.BaseColor = color;
+                item.Image.color = item.BaseColor;
                 item.Text.color = KDebug.GetVisualData.PrimaryTextColor;
 
                 _predictionItems.Add(item);
@@ -262,8 +266,12 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         for (int i = 0; i < _predictionItems.Count; ++i)
         {
             PredictionItem item = _predictionItems[i];
+            item.Image.color = item.BaseColor;
             item.gameObject.SetActive(false);
         }
+
+        _selectedPredictionItem = 0;
+        SelectPredictionItem(_selectedPredictionItem);
     }
 
     #endregion
@@ -520,6 +528,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
         if (IsCommand) // Parse Command
         {
+            _predictionCommands.Clear();
             bool bMatchFound = KDebug.Console.LookupBestMatches(a_input[0], ref _predictionCommands);
 
             if (bMatchFound)
@@ -528,27 +537,13 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 string predictionText = firstMatch.Name.Substring(a_input[0].Length, firstMatch.Name.Length - a_input[0].Length);
                 SetPredictionText(predictionText);
                 _currentCommand = firstMatch;
-
-                if (_predictionCommands.Count > 1)
-                {
-                    for (int i = 0; i < _predictionItems.Count; ++i)
-                    {
-                        PredictionItem item = _predictionItems[i];
-                        if (i + 1 < _predictionCommands.Count)
-                        {
-                            ICommand predictedCommand = _predictionCommands[_predictionCommands.Count - 1 - i];
-                            item.Text.text = predictedCommand.Name;
-                            item.gameObject.SetActive(true);
-                        }
-                    }
-                }
+                FillPredictionItemsWithCommands(_predictionCommands);
             }
             else
             {
                 _currentCommand = null;
                 SetPredictionText(string.Empty);
             }
-            _predictionCommands.Clear();
         }
 
         bCommandComplete = _currentCommand != null && a_input[0].Contains(_currentCommand.Name.ToLower());
@@ -678,4 +673,73 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     }
 
     #endregion
+
+    private void FillPredictionItemsWithCommands(List<ICommand> a_commandList)
+    {
+        int commandIdx = 0;
+
+        int predictionItemsCount = _predictionItems.Count;
+        for (int i = 0; i < a_commandList.Count; ++i)
+        {
+            ICommand predictedCommand = a_commandList[i];
+            int itemIdx = predictionItemsCount - 1 - i;
+
+            if (itemIdx < 0 || itemIdx >= predictionItemsCount)
+            {
+                continue;
+            }
+
+            PredictionItem item = _predictionItems[itemIdx];
+            item.Text.text = predictedCommand.Name;
+            item.gameObject.SetActive(true);
+        }
+    }
+
+    private void CyclePredictionItem(int a_dir)
+    {
+        int newSelection = _selectedPredictionItem + a_dir;
+
+        if (newSelection < _predictionCommands.Count &&
+            newSelection >= 0)
+        {
+            SelectPredictionItem(newSelection);
+        }
+    }
+
+    private void SelectPredictionItem(int a_id)
+    {
+        // Deselect Previous
+        PredictionItem item = GetPredictionItem(_selectedPredictionItem);
+        if (item != null)
+        {
+            item.Image.color = item.BaseColor;
+        }
+
+        // Highlight new
+        item = GetPredictionItem(a_id);
+        if (item != null)
+        {
+            item.Image.color = KDebug.GetVisualData.SecondaryColor;
+            _selectedPredictionItem = a_id;
+        }
+        else
+        {
+            _selectedPredictionItem = -1;
+        }
+    }
+
+    private PredictionItem GetPredictionItem(int a_id)
+    {
+        int count = _predictionItems.Count;
+        int itemIdx = count - 1 - a_id;
+        if (count != 0 &&
+            itemIdx >= 0 &&
+            itemIdx < count)
+        {
+            return _predictionItems[itemIdx];
+        }
+
+        return null;
+    }
+
 }

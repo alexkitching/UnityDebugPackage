@@ -6,4 +6,5 @@ public class PredictionItem : MonoBehaviour
 {
     public UnityEngine.UI.Image Image;
     public TMPro.TextMeshProUGUI Text;
+    public Color BaseColor;
 }
