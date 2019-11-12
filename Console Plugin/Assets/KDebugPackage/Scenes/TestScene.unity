@@ -1080,6 +1080,11 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 8692606841083405539, guid: 1bb575f78b71acd499b5feda917cdb42,
+        type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4742945680723475891, guid: 1bb575f78b71acd499b5feda917cdb42, type: 3}
     - {fileID: 4742945680723475890, guid: 1bb575f78b71acd499b5feda917cdb42, type: 3}

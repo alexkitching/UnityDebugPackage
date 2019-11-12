@@ -309,7 +309,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     #region Input Field Callbacks
     public void OnInputStringChanged()
     {
-        Debug.Log("OnInputStringChanged");
         ResetPredictionItems();
         string input = _inputField.text;
         string[] inputStrings = input.Split(' ');
@@ -716,7 +715,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             PredictionItem item = _predictionItems[itemIdx];
 
             string text = predictedCommand.Name;
-            text += "-   ";
+            text += " - ";
             for (int j = 0; j < predictedCommand.ArgCount; ++j)
             {
                 text += predictedCommand.GetArgName(j);

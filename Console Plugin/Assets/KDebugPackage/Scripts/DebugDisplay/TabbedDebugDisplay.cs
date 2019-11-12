@@ -16,6 +16,8 @@ public class DebugTabbedDisplay : DebugDisplay
         {
             _tabs[_currentTab]?.OnShow();
         }
+        
+        UpdateTabText();
     }
 
     public override void OnUpdate()
@@ -31,7 +33,7 @@ public class DebugTabbedDisplay : DebugDisplay
         DebugDisplay tab = _tabs[_currentTab];
 
         // On Gui
-        DrawTabText();
+        DrawText(_tabText, true);
         tab?.OnGUI();
 
         // Post
@@ -78,6 +80,7 @@ public class DebugTabbedDisplay : DebugDisplay
 
         newTab.OnShow();
         newTab.GetRect.sizeDelta = s_DefaultDisplaySize;
+        UpdateTabText();
     }
 
     public void AddTab(DebugDisplay a_display)
@@ -90,12 +93,12 @@ public class DebugTabbedDisplay : DebugDisplay
         }
 
         _tabs.Add(a_display);
+
+        UpdateTabText();
     }
 
-    private void DrawTabText()
+    private void UpdateTabText()
     {
         _tabText = $"Tab {_currentTab + 1}/{_tabs.Count}";
-        DrawText(_tabText, true);
     }
-
 }

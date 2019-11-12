@@ -186,23 +186,24 @@ public static partial class KDebug
             return command;
         }
 
+        private static List<KTrie.ILookupQuery> LookupListBuffer = new List<KTrie.ILookupQuery>(10);
         public static bool LookupBestMatches(string a_string, ref List<ICommand> a_list)
         {
             if (s_Initialised == false)
                 return false;
 
-            List<KTrie.ILookupQuery> matchList = new List<KTrie.ILookupQuery>(a_list.Capacity);
-            int matchCount = s_Tree.LookupBestMatches(a_string.ToLowerInvariant(), ref matchList);
+            int matchCount = s_Tree.LookupBestMatches(a_string.ToLowerInvariant(), ref LookupListBuffer);
 
             for (int i = 0; i < matchCount; ++i)
             {
-                int matchID = matchList[i].ID;
+                int matchID = LookupListBuffer[i].ID;
                 ICommand command = s_RegisteredCommands[matchID];
                 if (command != null)
                 {
                     a_list.Add(command);
                 }
             }
+            LookupListBuffer.Clear();
 
             return a_list.Count != 0;
         }
