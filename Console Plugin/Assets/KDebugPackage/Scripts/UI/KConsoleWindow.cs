@@ -363,12 +363,10 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     public void OnInputSelect()
     {
-        Debug.Log("OnInputSelect");
     }
 
     public void OnInputDeselect()
     {
-        Debug.Log("OnInputDeselect");
     }
 
     private char OnValidateInput(string a_text, int a_charindex, char a_addedchar)
@@ -573,8 +571,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             _currentCommand = null;
             SetPredictionText(string.Empty);
         }
-
-        Debug.Log("CommandComplete: " + bCommandComplete + " Arg Count: " + _currentInputLength + "ArgEmpty: " + bArgEmpty);
 
         if(IsCommand && bCommandComplete == false)
         {

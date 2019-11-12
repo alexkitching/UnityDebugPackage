@@ -1003,6 +1003,25 @@ Transform:
   m_Father: {fileID: 559176015}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1435280877 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 568521464178525349, guid: 1bb575f78b71acd499b5feda917cdb42,
+    type: 3}
+  m_PrefabInstance: {fileID: 905332110182257590}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1435280879
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1435280877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1200242548, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShowMaskGraphic: 1
 --- !u!1001 &905332110182257590
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1083,6 +1102,16 @@ PrefabInstance:
     - target: {fileID: 8692606841083405539, guid: 1bb575f78b71acd499b5feda917cdb42,
         type: 3}
       propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742945680311101254, guid: 1bb575f78b71acd499b5feda917cdb42,
+        type: 3}
+      propertyPath: m_overflowMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4742945680311101254, guid: 1bb575f78b71acd499b5feda917cdb42,
+        type: 3}
+      propertyPath: m_enableWordWrapping
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
