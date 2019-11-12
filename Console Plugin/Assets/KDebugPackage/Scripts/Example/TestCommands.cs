@@ -9,8 +9,10 @@ public partial class KDebug
     {
         private class SpawnCubeCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "SpawnCube";
+            string ICommand.Name => "SpawnCube";
     
+            public int ArgCount => 3;
+
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -27,7 +29,7 @@ public partial class KDebug
     
             CommandResult ICommand.Run(params string[] a_args)
             {
-                if (a_args.Length != 3)
+                if (a_args.Length != ArgCount)
                 {
                     return CommandResult.Error("Invalid Argument Length!");
                 }
@@ -62,8 +64,10 @@ public partial class KDebug
     
         private class SpawnSphereCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "SpawnSphere";
-    
+            string ICommand.Name => "SpawnSphere";
+
+            public int ArgCount => 3;
+
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -80,7 +84,7 @@ public partial class KDebug
     
             CommandResult ICommand.Run(params string[] a_args)
             {
-                if (a_args.Length != 3)
+                if (a_args.Length != ArgCount)
                 {
                     return CommandResult.Error("Invalid Argument Length!");
                 }
@@ -111,11 +115,11 @@ public partial class KDebug
                 GameObject.Instantiate(sphereObject, a_pos, Quaternion.identity);
             }
         }
-    
+
         private class AddHealthCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "AddHealth";
-    
+            string ICommand.Name => "AddHealth";
+            public int ArgCount => 1;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -128,7 +132,7 @@ public partial class KDebug
     
             CommandResult ICommand.Run(params string[] a_args)
             {
-                if (a_args.Length >= 1)
+                if (a_args.Length >= ArgCount)
                 {
                     float value = float.Parse(a_args[0]);
                     ExampleStats.s_Health += value;
@@ -140,8 +144,8 @@ public partial class KDebug
 
         private class Kill : ICommand
         {
-            string ICommand.Name { get; set; } = "Kill";
-    
+            string ICommand.Name => "Kill";
+            public int ArgCount => 0;
             string ICommand.GetArgName(int a_argIndex)
             {
                 return string.Empty;
@@ -156,8 +160,8 @@ public partial class KDebug
     
         private class AddMana : ICommand
         {
-            string ICommand.Name { get; set; } = "AddMana";
-    
+            string ICommand.Name => "AddMana";
+            public int ArgCount => 1;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -181,8 +185,8 @@ public partial class KDebug
     
         private class NoclipCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "Noclip";
-    
+            string ICommand.Name => "Noclip";
+            public int ArgCount => 1;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -196,7 +200,7 @@ public partial class KDebug
             private GameObject noclipObj = null;
             CommandResult ICommand.Run(params string[] a_args)
             {
-                if (a_args.Length == 1 &&
+                if (a_args.Length == ArgCount &&
                     bool.TryParse(a_args[0], out bool value))
                 {
                     if (value && noclipObj == null)
@@ -221,8 +225,8 @@ public partial class KDebug
     
         private class SetPositionCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "SetPosition";
-    
+            string ICommand.Name => "SetPosition";
+            public int ArgCount => 3;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -267,8 +271,8 @@ public partial class KDebug
 
         private class TranslateCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "Translate";
-    
+            string ICommand.Name => "Translate";
+            public int ArgCount => 4;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -327,8 +331,8 @@ public partial class KDebug
     
         private class SetRotationCommand : ICommand
         {
-            string ICommand.Name { get; set; } = "SetRotation";
-    
+            string ICommand.Name => "SetRotation";
+            public int ArgCount => 4;
             string ICommand.GetArgName(int a_argIndex)
             {
                 switch (a_argIndex)
@@ -353,8 +357,8 @@ public partial class KDebug
     
         private class CauseGC : ICommand
         {
-            string ICommand.Name { get; set; } = "CauseGC";
-    
+            string ICommand.Name => "CauseGC";
+            public int ArgCount => 0;
             string ICommand.GetArgName(int a_argIndex)
             {
                 return string.Empty;

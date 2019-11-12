@@ -125,9 +125,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 {
                     // Complete Command
                     input += _predictionText.text;
-                    //_inputField.SetTextWithoutNotify(input);
-                    //_inputField.caretPosition = input.Length;
-                    //OnInputStringChanged();
                 }
             }
             
@@ -150,11 +147,32 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             // Raycast
             RaycastUpdateContext();
         }
+        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
+        {
+            string input = _inputField.text;
+            if (_currentInputLength <= 1 &&
+                _currentCommand != null &&
+                _inputField.text.Length != _currentCommand.Name.Length)
+            {
+                // Complete Command
+                input += _predictionText.text;
+                // Add Extra Spacing
+                input += ' ';
+                _inputField.SetTextWithoutNotify(input);
+                _inputField.caretPosition = input.Length;
+                OnInputStringChanged();
+            }
+            else
+            {
+                _inputField.ReleaseSelection();
+                _inputField.DeactivateInputField();
+            }
+        }
     }
 
     private void OnEnable()
     {
-        DisablePredictionItems();
+        ResetPredictionItems();
 
         if (_rememberLastCommandOnOpen)
         {
@@ -260,15 +278,17 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _predictionText.text = a_value;
     }
 
-
-    private void DisablePredictionItems()
+    private void ResetPredictionItems()
     {
         for (int i = 0; i < _predictionItems.Count; ++i)
         {
             PredictionItem item = _predictionItems[i];
             item.Image.color = item.BaseColor;
             item.gameObject.SetActive(false);
+            item.Rect.sizeDelta = _predictionItemTemplate.Rect.sizeDelta;
         }
+
+        _predictionCommands.Clear();
 
         _selectedPredictionItem = 0;
         SelectPredictionItem(_selectedPredictionItem);
@@ -290,7 +310,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     public void OnInputStringChanged()
     {
         Debug.Log("OnInputStringChanged");
-        DisablePredictionItems();
+        ResetPredictionItems();
         string input = _inputField.text;
         string[] inputStrings = input.Split(' ');
         _currentInputLength = inputStrings.Length;
@@ -546,7 +566,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             }
         }
 
-        bCommandComplete = _currentCommand != null && a_input[0].Contains(_currentCommand.Name.ToLower());
+        bCommandComplete = _currentCommand != null && a_input[0].ToLower().Contains(_currentCommand.Name.ToLower());
         bArgEmpty = _currentInputLength <= 1 || string.IsNullOrWhiteSpace(a_input[1]);
 
         if(bCommandComplete == false && _currentInputLength > 1)
@@ -679,6 +699,10 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         int commandIdx = 0;
 
         int predictionItemsCount = _predictionItems.Count;
+
+        // Best Size used for sizing of 
+        Vector2 itemSize = _predictionItemTemplate.Rect.sizeDelta;
+        float bestWidth = itemSize.x;
         for (int i = 0; i < a_commandList.Count; ++i)
         {
             ICommand predictedCommand = a_commandList[i];
@@ -690,8 +714,33 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             }
 
             PredictionItem item = _predictionItems[itemIdx];
-            item.Text.text = predictedCommand.Name;
+
+            string text = predictedCommand.Name;
+            text += "-   ";
+            for (int j = 0; j < predictedCommand.ArgCount; ++j)
+            {
+                text += predictedCommand.GetArgName(j);
+                if (j + 1 < predictedCommand.ArgCount)
+                {
+                    text += ", ";
+                }
+            }
+
+            item.Text.text = text;
+
+            float width = item.Text.GetPreferredValues().x + 10f;
+            if (width > bestWidth)
+            {
+                bestWidth = width;
+            }
+
             item.gameObject.SetActive(true);
+        }
+
+        itemSize.x = bestWidth;
+        for (int i = 0; i < _predictionItems.Count; ++i)
+        {
+            _predictionItems[i].Rect.sizeDelta = itemSize;
         }
     }
 
@@ -721,6 +770,22 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         {
             item.Image.color = KDebug.GetVisualData.SecondaryColor;
             _selectedPredictionItem = a_id;
+
+            int predictedCommandCount = _predictionCommands.Count;
+            if (predictedCommandCount > 0 &&
+                _selectedPredictionItem < predictedCommandCount)
+            {
+                ICommand command = _predictionCommands[_selectedPredictionItem];
+                if (command != null)
+                {
+                    string input = _inputField.text;
+                    string[] inputStrings = input.Split(' ');
+
+                    string predictionText = command.Name.Substring(inputStrings[0].Length, command.Name.Length - inputStrings[0].Length);
+                    SetPredictionText(predictionText);
+                    _currentCommand = command;
+                }
+            }
         }
         else
         {

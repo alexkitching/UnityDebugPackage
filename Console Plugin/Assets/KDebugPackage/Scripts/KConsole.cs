@@ -29,8 +29,9 @@ public struct CommandResult
 
 public interface ICommand
 {
-    string Name { get; set; }
+    string Name { get; }
 
+    int ArgCount { get; }
     string GetArgName(int a_argIndex);
     CommandResult Run(params string[] a_args);
 }

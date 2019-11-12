@@ -1913,11 +1913,11 @@ namespace TMPro
                 case KeyCode.Return:
                 case KeyCode.KeypadEnter:
                     {
-                        if (lineType != LineType.MultiLineNewline)
-                        {
-                            m_ReleaseSelection = true;
-                            return EditState.Finish;
-                        }
+                        //if (lineType != LineType.MultiLineNewline)
+                        //{
+                        //    m_ReleaseSelection = true;
+                        //    return EditState.Finish;
+                        //}
                         break;
                     }
 
