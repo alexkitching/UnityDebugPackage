@@ -53,8 +53,27 @@ public partial class KDebug
         TestCommands.Register();
 
         s_Tracker = a_tracker;
+        s_Tracker.OnAwake();
         s_Initialised = true;
         return true;
+    }
+
+    public static void Update()
+    {
+        if (s_Initialised == false)
+            return;
+
+        s_Tracker.OnUpdate();
+        Console.Update();
+        DisplayManager.Update();
+    }
+
+    public static void OnGUI()
+    {
+        if (s_Initialised == false)
+            return;
+
+        DisplayManager.OnGUI();
     }
 
     public static void Shutdown()
@@ -85,7 +104,7 @@ public partial class KDebug
             BindingFlags.Public |
             BindingFlags.NonPublic);
 
-        return (bool)dispMgrMthdInfo?.Invoke(null, new object[] {a_displayHandler});
+        return (bool)dispMgrMthdInfo?.Invoke(null, new object[] {s_data.DisplayData, a_displayHandler});
     }
 
     private static bool InitialiseLog()

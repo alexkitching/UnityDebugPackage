@@ -57,7 +57,7 @@ public class PerformanceDisplay : DebugDisplay
             _GCFrameCounter != cShowForFrames)
         {
             _GCFrameCounter = cShowForFrames;
-            KDebug.Log("GCOccured!");
+            KDebug.Log("<color=yellow>GCOccured!");
         }
 
         if (KDebug.Tracker.WasLongFrame &&

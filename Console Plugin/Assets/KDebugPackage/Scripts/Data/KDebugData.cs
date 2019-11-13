@@ -29,6 +29,7 @@ public struct ConsoleData
     // Max Values
     public int MaxCommands;
     public int MaxHistory;
+    public int MaxConsoleInput;
 
     // Input
     public KeyCode KeyCodeToggleOpen;
@@ -37,7 +38,19 @@ public struct ConsoleData
     { 
         MaxCommands = 100,
         MaxHistory = 10,
+        MaxConsoleInput = 128,
         KeyCodeToggleOpen = KeyCode.BackQuote
+    };
+}
+
+[System.Serializable]
+public struct DisplayData
+{
+    public int MaxDisplays;
+
+    public static DisplayData Default = new DisplayData()
+    {
+        MaxDisplays = 10
     };
 }
 
@@ -47,10 +60,12 @@ public class KDebugData : ScriptableObject
     public KDebugData()
     {
         ConsoleData = ConsoleData.Default;
+        DisplayData = DisplayData.Default;
         VisualData = VisualSchemeData.Default;
     }
 
     // Console 
     public ConsoleData ConsoleData;
+    public DisplayData DisplayData;
     public VisualSchemeData VisualData;
 }

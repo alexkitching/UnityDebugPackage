@@ -255,7 +255,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7180814553532559873}
-  - component: {fileID: 6000888699951872749}
   - component: {fileID: 5332359706102397638}
   m_Layer: 5
   m_Name: OBJ_PredictionItem_TEMPLATE
@@ -285,14 +284,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 200, y: 30}
   m_Pivot: {x: 0, y: 1}
---- !u!222 &6000888699951872749
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2519173893010605180}
-  m_CullTransparentMesh: 0
 --- !u!114 &5332359706102397638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1902,7 +1893,7 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 12
+  m_fontSize: 16
   m_fontSizeBase: 12
   m_fontWeight: 400
   m_enableAutoSizing: 1

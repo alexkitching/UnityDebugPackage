@@ -11,17 +11,20 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
     [SerializeField]
     private GameObject _displayRoot = null;
 
-    private const int MAX_DISPLAYS = 10;
-    private Stack<RectTransform> _debugDisplayObjects = new Stack<RectTransform>(MAX_DISPLAYS);
-    private List<DebugDisplay> _activeDisplays = new List<DebugDisplay>(MAX_DISPLAYS);
+    private Stack<RectTransform> _debugDisplayObjects = null;
+    private List<DebugDisplay> _activeDisplays = null;
+    private int _maxDisplays = 1;
 
-    void Awake()
+    void KDebug.DisplayHandler.OnAwake()
     {
+        _maxDisplays = KDebug.DisplayManager.MaxDisplays;
+        _debugDisplayObjects = new Stack<RectTransform>(_maxDisplays);
+        _activeDisplays = new List<DebugDisplay>(_maxDisplays);
+        
         WarmupPool();
     }
 
-    // Update is called once per frame
-    void Update()
+    void KDebug.DisplayHandler.OnUpdate()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
@@ -30,7 +33,7 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
         }
     }
 
-    void OnGUI()
+    void KDebug.DisplayHandler.OnGUI()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
@@ -39,7 +42,7 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
             display.OnPostGUI();
         }
     }
-    
+
     public void AddDisplay(DebugDisplay a_display)
     {
         if (_debugDisplayObjects.Count + _activeDisplays.Count == 0)
@@ -73,7 +76,7 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
 
     private void WarmupPool()
     {
-        while (_debugDisplayObjects.Count < MAX_DISPLAYS)
+        while (_debugDisplayObjects.Count < _maxDisplays)
         {
             RectTransform trans = Instantiate(_displayTemplate, _poolRoot.transform);
             _debugDisplayObjects.Push(trans);

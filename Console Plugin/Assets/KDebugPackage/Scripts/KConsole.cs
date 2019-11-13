@@ -38,9 +38,14 @@ public interface ICommand
 
 public interface IConsoleHandler
 {
+    void OnAwake(ConsoleData a_data);
+    void OnUpdate();
+
     bool IsOpen { get;}
     void Open();
     void Close();
+
+    // Parsing
 
     void OnWriteToConsole(string a_value, Color a_color);
 
@@ -114,12 +119,25 @@ public static partial class KDebug
             s_CommandHistory = new KQueue<ConsoleHistory>(s_data.ConsoleData.MaxHistory);
             s_MaxHistory = s_data.ConsoleData.MaxHistory;
 
+            s_Handler.OnAwake(s_data.ConsoleData);
+
             if(s_Handler.IsOpen)
                 s_Handler.Close();
 
             s_Handler.OnVisualChange();
 
             return s_Initialised = true;
+        }
+
+        public static void Update()
+        {
+            if (s_Initialised == false)
+                return;
+
+            if (s_Handler.IsOpen)
+            {
+                s_Handler.OnUpdate();
+            }
         }
 
         private static void Reset()

@@ -24,6 +24,16 @@ public class KDebugManager : MonoBehaviour
         KDebug.Initialise(_dataObject.Data, _consoleWindow, _performanceTracker, _displayHandler);
     }
 
+    private void Update()
+    {
+        KDebug.Update();
+    }
+
+    private void OnGUI()
+    {
+        KDebug.OnGUI();
+    }
+
     private void OnDestroy()
     {
         KDebug.Shutdown();

@@ -18,7 +18,6 @@ public class PredictionItem : MonoBehaviour
             return rect;
         }
     }
-
     public UnityEngine.UI.Image Image;
     public TMPro.TextMeshProUGUI Text;
     public Color BaseColor;

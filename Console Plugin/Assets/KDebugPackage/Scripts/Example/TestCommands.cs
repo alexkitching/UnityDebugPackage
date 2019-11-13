@@ -355,13 +355,13 @@ public partial class KDebug
             }
         }
     
-        private class CauseGC : ICommand
+        private class CreateGarbage : ICommand
         {
-            string ICommand.Name => "CauseGC";
-            public int ArgCount => 0;
+            string ICommand.Name => "CreateGarbage";
+            public int ArgCount => 1;
             string ICommand.GetArgName(int a_argIndex)
             {
-                return string.Empty;
+                return a_argIndex == 0 ? "MB" : string.Empty;
             }
     
             private class MBGarbage
@@ -372,16 +372,45 @@ public partial class KDebug
     
             CommandResult ICommand.Run(params string[] a_args)
             {
-                List<MBGarbage> list = new List<MBGarbage>();
-                for (int i = 0; i < 800; ++i)
+                if (int.TryParse(a_args[0], out int Mbs))
                 {
-                    MBGarbage garbage = new MBGarbage();
-                    list.Add(garbage);
+                    List<MBGarbage> list = new List<MBGarbage>();
+                    for (int i = 0; i < Mbs; ++i)
+                    {
+                        MBGarbage garbage = new MBGarbage();
+                        list.Add(garbage);
+                    }
                 }
 
                 return CommandResult.Default("Success");
             }
+
+
         }
+        private class Log : ICommand
+        {
+            public string Name => "Log";
+            public int ArgCount => 1;
+
+            string ICommand.GetArgName(int a_argIndex)
+            {
+                return a_argIndex == 0 ? "Message" : string.Empty;
+            }
+
+            CommandResult ICommand.Run(params string[] a_args)
+            {
+                string final = string.Empty;
+
+                for (int i = 0; i < a_args.Length; ++i)
+                {
+                    final += a_args[i] + " ";
+                }
+
+                s_logFile.WriteLine(final);
+                return CommandResult.Default(TimeStampLog(final));
+            }
+        }
+        
 
         private static bool bRegistered = false;
         public static void Register()
@@ -398,7 +427,8 @@ public partial class KDebug
             KDebug.Console.RegisterCommand(new SetPositionCommand());
             KDebug.Console.RegisterCommand(new TranslateCommand());
             KDebug.Console.RegisterCommand(new SetRotationCommand());
-            KDebug.Console.RegisterCommand(new CauseGC());
+            KDebug.Console.RegisterCommand(new CreateGarbage());
+            KDebug.Console.RegisterCommand(new Log());
         }
     }
 }

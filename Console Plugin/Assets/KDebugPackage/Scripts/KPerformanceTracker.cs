@@ -10,6 +10,9 @@ public static partial class KDebug
         bool WasGCCollected { get; }
         long GetCurrentMemory { get; }
         long GetHeapSize { get; }
+
+        void OnAwake();
+        void OnUpdate();
     }
 }   
 
@@ -45,30 +48,16 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
 
     private long m_HeapSize = 0;
 
-    void Awake()
+    void KDebug.IPerformanceTracker.OnAwake()
     {
         Application.targetFrameRate = 300;
-    }
 
-    void Start()
-    {
         PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
         KDebug.DisplayManager.RegisterDisplayAsPrimaryTab(performanceDisplay);
         KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<ExampleStatsDisplay>();
-        //KDebug.TestDisplay testDisplay = KDebug.DisplayManager.RegisterDebugDisplay<KDebug.TestDisplay>();
-
-        //Resolution res = Screen.currentResolution;
-        //
-        //Vector2 pos = testDisplay.GetRect.anchoredPosition;
-        //
-        //pos.y -= 180f;
-        //
-        //testDisplay.GetRect.anchoredPosition = pos;
-
     }
 
-    // Update is called once per frame
-    void Update()
+    void KDebug.IPerformanceTracker.OnUpdate()
     {
         m_DeltaTime = Time.unscaledDeltaTime;
         m_accumFps += m_DeltaTime;
@@ -93,10 +82,4 @@ public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
 
         m_HeapSize = UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong();
     }
-
-    void OnDestroy()
-    {
-
-    }
-
 }
