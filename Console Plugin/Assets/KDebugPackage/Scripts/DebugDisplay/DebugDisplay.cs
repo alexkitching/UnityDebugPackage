@@ -1,21 +1,34 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Text;
 
-public abstract class DebugDisplay
+public abstract class DebugDisplay : IDebugDisplay
 {
-    protected RectTransform _rect = null;
     protected DebugDisplay _parent = null;
 
-    public RectTransform GetRect => _rect;
+    private IDebugDisplayUIObject _uiObject = null;
+    IDebugDisplayUIObject IDebugDisplay.UIObject => _parent != null ? _parent._uiObject : _uiObject;
+
+    public RectTransform Rect => _uiObject?.Rect;
 
     private float _yOffset = 0;
 
     private readonly GUIStyle _Style = GUIStyle.none;
     private Color _defaultFontColour = Color.black;
 
-    private Color DefaultFontColour => _parent?.DefaultFontColour ?? _defaultFontColour;
+    public Color DefaultFontColour
+    {
+        get => _parent?.DefaultFontColour ?? _defaultFontColour;
+
+        set
+        {
+            if (_parent != null)
+            {
+                _parent.DefaultFontColour = value;
+            }
+
+            _defaultFontColour = value;
+        }
+    }
 
     private float _Padding = 10f;
 
@@ -29,23 +42,30 @@ public abstract class DebugDisplay
         _Style.wordWrap = false;
     }
 
-    public void OnAdd(RectTransform a_rect, DebugDisplay a_parent = null)
+    public void OnAdd(IDebugDisplayUIObject a_object)
     {
-        _rect = a_rect;
-        _rect.sizeDelta = s_DefaultDisplaySize;
-        _parent = a_parent;
+        _uiObject = a_object;
+        _uiObject.Rect.sizeDelta = s_DefaultDisplaySize;
+    }
+
+    public void OnAdd(IDebugDisplay a_display)
+    {
+        _uiObject = a_display.UIObject;
+        _uiObject.Rect.sizeDelta = s_DefaultDisplaySize;
+        _parent = (DebugDisplay) a_display;
     }
 
     public void OnRemove()
     {
-
+        _uiObject = null;
+        _parent = null;
     }
 
     public virtual void OnShow() {}
     public virtual void OnUpdate() { }
     public abstract void OnGUI();
 
-    public void OnPostGUI()
+    public virtual void OnPostGUI()
     {
         _yOffset = 0;
     }
@@ -73,17 +93,17 @@ public abstract class DebugDisplay
             baseOffset = _parent.GetVerticalOffset();
         }
         
-        if (size.x + (_Padding * 2) > _rect.sizeDelta.x)
+        if (size.x + (_Padding * 2) > _uiObject.Rect.sizeDelta.x)
         {
-            _rect.sizeDelta = new Vector2(size.x + (_Padding * 2), _rect.sizeDelta.y);
+            _uiObject.Rect.sizeDelta = new Vector2(size.x + (_Padding * 2), _uiObject.Rect.sizeDelta.y);
         }
         
-        if (baseOffset + _yOffset + size.y + (_Padding * 2) > _rect.sizeDelta.y)
+        if (baseOffset + _yOffset + size.y + (_Padding * 2) > _uiObject.Rect.sizeDelta.y)
         {
-            _rect.sizeDelta = new Vector2(_rect.sizeDelta.x, baseOffset + _yOffset + size.y + (_Padding * 2));
+            _uiObject.Rect.sizeDelta = new Vector2(_uiObject.Rect.sizeDelta.x, baseOffset + _yOffset + size.y + (_Padding * 2));
         }
 
-        Vector2 position = _rect.anchoredPosition;
+        Vector2 position = _uiObject.Rect.anchoredPosition;
 
         // Apply Offset
         position.x += _Padding;
@@ -100,9 +120,9 @@ public abstract class DebugDisplay
     protected void VerticalPad(float a_amount)
     {
         _yOffset += a_amount;
-        if (GetVerticalOffset() + (_Padding * 2) > _rect.sizeDelta.y)
+        if (GetVerticalOffset() + (_Padding * 2) > _uiObject.Rect.sizeDelta.y)
         {
-            _rect.sizeDelta = new Vector2(_rect.sizeDelta.x, GetVerticalOffset() + (_Padding * 2));
+            _uiObject.Rect.sizeDelta = new Vector2(_uiObject.Rect.sizeDelta.x, GetVerticalOffset() + (_Padding * 2));
         }
     }
 
@@ -120,5 +140,4 @@ public abstract class DebugDisplay
     {
         _defaultFontColour = a_colour;
     }
-
 }

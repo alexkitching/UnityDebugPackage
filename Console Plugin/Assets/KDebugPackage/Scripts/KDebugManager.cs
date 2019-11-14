@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class KDebugManager : MonoBehaviour
@@ -9,8 +7,6 @@ public class KDebugManager : MonoBehaviour
     private KDebugDataObject _dataObject = null;
     [SerializeField]
     private KConsoleWindow _consoleWindow = null;
-    [SerializeField] 
-    private KPerformanceTracker _performanceTracker = null;
     [SerializeField]
     private KDebugDisplayHandler _displayHandler = null;
 
@@ -21,7 +17,8 @@ public class KDebugManager : MonoBehaviour
             throw new NullReferenceException("Data object is null!");
         }
 
-        KDebug.Initialise(_dataObject.Data, _consoleWindow, _performanceTracker, _displayHandler);
+        // Init KDebug
+        KDebug.Initialise(_dataObject.Data, _consoleWindow, new KPerformanceTracker(), _displayHandler);
     }
 
     private void Update()

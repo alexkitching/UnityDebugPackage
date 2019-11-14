@@ -1,104 +1,110 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
-public class DebugTabbedDisplay : DebugDisplay
+public partial class KDebug
 {
-    private readonly List<DebugDisplay> _tabs = new List<DebugDisplay>();
-
-    private string _tabText;
-    private int _currentTab = 0;
-
-    public override void OnShow()
+    public class DebugTabbedDisplay : DebugDisplay
     {
-        int tabCount = _tabs.Count;
-        if (tabCount > 0 && _currentTab < tabCount)
+        private readonly List<DebugDisplay> _tabs = new List<DebugDisplay>();
+    
+        private string _tabText;
+        private int _currentTab = 0;
+    
+        public override void OnShow()
         {
-            _tabs[_currentTab]?.OnShow();
+            int tabCount = _tabs.Count;
+            if (tabCount > 0 && _currentTab < tabCount)
+            {
+                _tabs[_currentTab]?.OnShow();
+            }
+            
+            UpdateTabText();
         }
-        
-        UpdateTabText();
-    }
-
-    public override void OnUpdate()
-    {
-        DebugDisplay tab = _tabs[_currentTab];
-        tab?.OnUpdate();
-    }
-
-    public override void OnGUI()
-    {
-        StringBuilder.Clear();
-
-        DebugDisplay tab = _tabs[_currentTab];
-
-        // On Gui
-        DrawText(_tabText, true);
-        tab?.OnGUI();
-
-        // Post
-        OnPostGUI();
-        tab?.OnPostGUI();
-    }
-
-    public void NextTab()
-    {
-        int newIdx = _currentTab + 1;
-
-        if (newIdx >= _tabs.Count)
+    
+        public override void OnUpdate()
         {
-            newIdx = 0;
+            DebugDisplay tab = _tabs[_currentTab];
+            tab?.OnUpdate();
         }
-
-        ChangeTab(newIdx);
-    }
-
-    public void PreviousTab()
-    {
-        int newIdx = _currentTab - 1;
-
-        if (newIdx < 0)
+    
+        public override void OnGUI()
         {
-            newIdx = _tabs.Count - 1;
+            StringBuilder.Clear();
+    
+            DebugDisplay tab = _tabs[_currentTab];
+    
+            // On Gui
+            DrawText(_tabText, true);
+            tab?.OnGUI();
         }
-
-        ChangeTab(newIdx);
-    }
-
-    private void ChangeTab(int a_tabIndex)
-    {
-        DebugDisplay oldTab = _tabs[_currentTab];
-
-        _currentTab = a_tabIndex;
-
-        DebugDisplay newTab = _tabs[_currentTab];
-
-        if (newTab == oldTab)
+    
+        public override void OnPostGUI()
         {
-            return;
+            base.OnPostGUI();
+    
+            DebugDisplay tab = _tabs[_currentTab];
+            tab?.OnPostGUI();
         }
-
-        newTab.OnShow();
-        newTab.GetRect.sizeDelta = s_DefaultDisplaySize;
-        UpdateTabText();
-    }
-
-    public void AddTab(DebugDisplay a_display)
-    {
-        a_display.OnAdd(_rect, this);
-
-        if (_tabs.Count == 0)
+    
+        public void NextTab()
         {
-            a_display.OnShow();
+            int newIdx = _currentTab + 1;
+    
+            if (newIdx >= _tabs.Count)
+            {
+                newIdx = 0;
+            }
+    
+            ChangeTab(newIdx);
         }
-
-        _tabs.Add(a_display);
-
-        UpdateTabText();
-    }
-
-    private void UpdateTabText()
-    {
-        _tabText = $"Tab {_currentTab + 1}/{_tabs.Count}";
+    
+        public void PreviousTab()
+        {
+            int newIdx = _currentTab - 1;
+    
+            if (newIdx < 0)
+            {
+                newIdx = _tabs.Count - 1;
+            }
+    
+            ChangeTab(newIdx);
+        }
+    
+        private void ChangeTab(int a_tabIndex)
+        {
+            DebugDisplay oldTab = _tabs[_currentTab];
+    
+            _currentTab = a_tabIndex;
+    
+            DebugDisplay newTab = _tabs[_currentTab];
+    
+            if (newTab == oldTab)
+            {
+                return;
+            }
+    
+            newTab.OnShow();
+            newTab.Rect.sizeDelta = s_DefaultDisplaySize;
+            UpdateTabText();
+        }
+    
+        public void AddTab(DebugDisplay a_display)
+        {
+            a_display.OnAdd(this);
+    
+            if (_tabs.Count == 0)
+            {
+                a_display.OnShow();
+            }
+    
+            _tabs.Add(a_display);
+    
+            UpdateTabText();
+        }
+    
+        private void UpdateTabText()
+        {
+            _tabText = $"Tab {_currentTab + 1}/{_tabs.Count}";
+        }
     }
 }
+

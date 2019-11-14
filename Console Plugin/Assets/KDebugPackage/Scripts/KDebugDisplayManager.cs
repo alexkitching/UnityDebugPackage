@@ -4,33 +4,14 @@ using UnityEngine.UI;
 
 public partial class KDebug
 {
-    public interface DisplayHandler
-    {
-        void OnAwake();
-        void OnUpdate();
-        void OnGUI();
-
-        void AddDisplay(DebugDisplay a_display);
-        void RemoveDisplay(DebugDisplay a_display);
-        void OnVisualChange();
-    }
-
-    public class TestDisplay : DebugDisplay
-    {
-        public override void OnGUI()
-        {
-            DrawText("Test Display.");
-        }
-    }
-
     public static class DisplayManager
     {
-        private static DisplayHandler s_Handler = null;
+        private static IDisplayHandler s_Handler = null;
 
         private static readonly DebugTabbedDisplay s_PrimaryDisplay = new DebugTabbedDisplay();
         private static int s_maxDisplays = 1;
         public static int MaxDisplays => s_maxDisplays;
-        public static bool Initialise(DisplayData a_data, DisplayHandler a_handler)
+        public static bool Initialise(DisplayData a_data, IDisplayHandler a_handler)
         {
             if (s_Handler != null)
                 return false;

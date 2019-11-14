@@ -73,7 +73,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9c2ccc41ea21bb546b2d4211a30d5fe5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _displayTemplate: {fileID: 8068086075008834828}
+  _displayTemplate: {fileID: 6585753547117080745}
   _poolRoot: {fileID: 8068086074248881459}
   _displayRoot: {fileID: 8068086074765581832}
 --- !u!1 &8068086074050520006
@@ -270,6 +270,7 @@ GameObject:
   - component: {fileID: 8068086075008834828}
   - component: {fileID: 8068086075008834830}
   - component: {fileID: 6235125536072956552}
+  - component: {fileID: 6585753547117080745}
   m_Layer: 5
   m_Name: OBJ_Display_TEMPLATE
   m_TagString: Untagged
@@ -333,6 +334,19 @@ MonoBehaviour:
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
+--- !u!114 &6585753547117080745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8068086075008834829}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 568f2ae5e69561b47a09e0352de4f6d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _image: {fileID: 6235125536072956552}
 --- !u!1001 &447742619052837667
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
@@ -32,7 +30,6 @@ public partial class KDebug
                 _streamWriter.WriteLine(a_value);
             }
         }
-
 
         public bool Shutdown()
         {

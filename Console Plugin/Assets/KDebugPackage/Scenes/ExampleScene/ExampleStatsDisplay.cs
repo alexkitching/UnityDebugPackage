@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class ExampleStatsDisplay : DebugDisplay
+﻿public class ExampleStatsDisplay : DebugDisplay
 {
     public override void OnGUI()
     {

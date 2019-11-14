@@ -1,85 +1,125 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
-public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
+/// <summary>
+/// Implementation of the Display Handler Interface
+/// Registered through the KDebugManager Initialisation Function.
+/// </summary>
+
+public class KDebugDisplayHandler : MonoBehaviour, IDisplayHandler
 {
     [SerializeField] 
-    private RectTransform _displayTemplate = null;
+    private DebugDisplayObject _displayTemplate = null;
     [SerializeField]
     private GameObject _poolRoot = null;
     [SerializeField]
     private GameObject _displayRoot = null;
 
-    private Stack<RectTransform> _debugDisplayObjects = null;
-    private List<DebugDisplay> _activeDisplays = null;
+    private Stack<DebugDisplayObject> _debugDisplayObjects = null;
+    private List<IDebugDisplay> _activeDisplays = null;
     private int _maxDisplays = 1;
 
-    void KDebug.DisplayHandler.OnAwake()
+    void IDisplayHandler.OnAwake()
     {
+        // Preallocate Containers
         _maxDisplays = KDebug.DisplayManager.MaxDisplays;
-        _debugDisplayObjects = new Stack<RectTransform>(_maxDisplays);
-        _activeDisplays = new List<DebugDisplay>(_maxDisplays);
+        _debugDisplayObjects = new Stack<DebugDisplayObject>(_maxDisplays);
+
+        _activeDisplays = new List<IDebugDisplay>(_maxDisplays);
         
+        // Warmup Display Object Pool
         WarmupPool();
     }
 
-    void KDebug.DisplayHandler.OnUpdate()
+    void IDisplayHandler.OnUpdate()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
-            DebugDisplay display = _activeDisplays[i];
+            IDebugDisplay display = _activeDisplays[i];
             display?.OnUpdate();
         }
     }
 
-    void KDebug.DisplayHandler.OnGUI()
+    void IDisplayHandler.OnGUI()
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
-            DebugDisplay display = _activeDisplays[i];
-            display.OnGUI();
-            display.OnPostGUI();
+            IDebugDisplay display = _activeDisplays[i];
+            display?.OnGUI();
+            display?.OnPostGUI();
         }
     }
 
-    public void AddDisplay(DebugDisplay a_display)
+    public void AddDisplay(IDebugDisplay a_display)
     {
-        if (_debugDisplayObjects.Count + _activeDisplays.Count == 0)
+        if (a_display == null)
+        {
+            Debug.LogError("KDebugDisplayHandler:: Attempting to add null display!");
+            return;
+        }
+
+        if (_debugDisplayObjects.Count + _activeDisplays.Count == 0) // In the event of no prewarmup, force.
         {
             WarmupPool();
         }
 
-        RectTransform rect = _debugDisplayObjects.Pop();
+        // Pop Object from Pool
+        DebugDisplayObject displayObject = _debugDisplayObjects.Pop();
 
-        a_display.OnAdd(rect);
-        rect.transform.SetParent(_displayRoot.transform);
-        rect.gameObject.SetActive(true);
+        // Call On Add
+        a_display.OnAdd(displayObject);
+        // Set Parent to Root
+        displayObject.transform.SetParent(_displayRoot.transform);
+
+        // Turn Culling off - Display now!
+        displayObject.SetShouldCull(false);
+
+        // Apply Visuals to Display
+        ApplyVisualsToDisplay(a_display);
+
+        // Add to Active Displays List
         _activeDisplays.Add(a_display);
 
-        ApplyVisualsToDisplay(a_display);
+        // Call on Show
         a_display.OnShow();
     }
 
-    public void RemoveDisplay(DebugDisplay a_display)
+    public void RemoveDisplay(IDebugDisplay a_display)
     {
-        RectTransform rect = a_display.GetRect;
+        // Cast to Concrete UI Object
+        DebugDisplayObject UIObject = (DebugDisplayObject)a_display.UIObject;
 
-        rect.gameObject.SetActive(false);
-        rect.transform.SetParent(_poolRoot.transform);
+        // Set to Cull
+        UIObject.SetShouldCull(true);
 
+        // Parent back under the pool
+        UIObject.Rect.SetParent(_poolRoot.transform);
+
+        // Remove from the active displays list.
         _activeDisplays.Remove(a_display);
 
+        // Call on Remove
         a_display.OnRemove();
-        _debugDisplayObjects.Push(rect);
+
+        // Push UI Object back into the Pool.
+        _debugDisplayObjects.Push((DebugDisplayObject)a_display.UIObject);
     }
 
     private void WarmupPool()
     {
+        // Fill Pool to Max
         while (_debugDisplayObjects.Count < _maxDisplays)
         {
-            RectTransform trans = Instantiate(_displayTemplate, _poolRoot.transform);
-            _debugDisplayObjects.Push(trans);
+            DebugDisplayObject displayObject = Instantiate(_displayTemplate, _poolRoot.transform);
+
+            // Cull by Default
+            displayObject.SetShouldCull(true);
+            // Enable Object, Template should be disabled.
+            displayObject.gameObject.SetActive(true);
+            // Push to Pool.
+            _debugDisplayObjects.Push(displayObject);
         }
     }
 
@@ -87,23 +127,20 @@ public class KDebugDisplayHandler : MonoBehaviour, KDebug.DisplayHandler
     {
         for (int i = 0; i < _activeDisplays.Count; ++i)
         {
-            DebugDisplay disp = _activeDisplays[i];
+            IDebugDisplay disp = _activeDisplays[i];
             ApplyVisualsToDisplay(disp);
         }
     }
 
-    private void ApplyVisualsToDisplay(DebugDisplay a_display)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private void ApplyVisualsToDisplay(IDebugDisplay a_display)
     {
         if (a_display == null) 
             return;
 
-        UnityEngine.UI.Image img = a_display.GetRect.GetComponent<UnityEngine.UI.Image>();
-        if (img)
-        {
-            img.color = KDebug.GetVisualData.PrimaryColor;
-        }
-
-        a_display.SetDefaultFontColour(KDebug.GetVisualData.PrimaryTextColor);
+        // Set Image/Font Colour
+        a_display.UIObject.Colour = KDebug.GetVisualData.PrimaryColor;
+        a_display.DefaultFontColour = KDebug.GetVisualData.PrimaryTextColor;
     }
 
 }

@@ -32,18 +32,6 @@ public class NoclipCamera : MonoBehaviour
         rotation.y += Input.GetAxis ("Mouse X");
         rotation.x += -Input.GetAxis ("Mouse Y");
         transform.eulerAngles = (Vector2)rotation * c_rot_speed;
-
-        //Vector2 rot = new Vector2(0,0);
-        //rot.x = Input.GetAxis("Mouse X");
-        //rot.y = -Input.GetAxis("Mouse Y");
-        //
-        //rot *= c_rot_speed * Time.deltaTime;
-        //
-        //Vector3 oldRot = transform.eulerAngles;
-        //
-        //oldRot = new Vector3(oldRot.x + rot.x, oldRot.y + rot.y, oldRot.z);
-        //
-        //transform.eulerAngles = oldRot;
     }
 
     private void UpdateMovement()

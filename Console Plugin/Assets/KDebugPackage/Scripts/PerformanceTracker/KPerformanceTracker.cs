@@ -1,22 +1,6 @@
 ﻿using UnityEngine;
 
-public static partial class KDebug
-{
-    public interface IPerformanceTracker
-    {
-        float GetFPS { get; }
-        float GetCPUms { get; }
-        bool WasLongFrame { get; }
-        bool WasGCCollected { get; }
-        long GetCurrentMemory { get; }
-        long GetHeapSize { get; }
-
-        void OnAwake();
-        void OnUpdate();
-    }
-}   
-
-public class KPerformanceTracker : MonoBehaviour, KDebug.IPerformanceTracker
+public class KPerformanceTracker : KDebug.IPerformanceTracker
 {
     public float GetFPS => m_FPS;
 

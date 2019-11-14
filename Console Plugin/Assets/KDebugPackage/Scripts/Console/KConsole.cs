@@ -1,48 +1,5 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using System.Runtime.CompilerServices;
-
-public struct CommandResult
-{
-    public CommandResult(string a_value)
-    {
-        Result = a_value;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CommandResult Warning(string a_value) { return new CommandResult("<color=yellow>" + a_value); }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CommandResult Error(string a_value) { return new CommandResult("<color=red>" + a_value); }
-
-    public string Result;
-}
-
-public interface ICommand
-{
-    string Name { get; }
-
-    int ArgCount { get; }
-    string GetArgName(int a_argIndex);
-    CommandResult Run(params string[] a_args);
-}
-
-public interface IConsoleHandler
-{
-    void OnAwake(ConsoleData a_data);
-    void OnUpdate();
-
-    bool IsOpen { get;}
-    void Open();
-    void Close();
-
-    // Parsing
-
-    void OnWriteToConsole(string a_value);
-
-    void OnVisualChange();
-}
 
 public static partial class KDebug
 {
@@ -67,7 +24,12 @@ public static partial class KDebug
         }
 
         private static readonly KTrie s_Tree = new KTrie();
+        private static List<KTrie.ILookupQuery> LookupListBuffer = new List<KTrie.ILookupQuery>(10);
+
+        // Registered Commands
         private static List<ICommand> s_RegisteredCommands = null;
+
+        // Handler
         private static IConsoleHandler s_Handler = null;
 
         // Keybindings
@@ -84,11 +46,12 @@ public static partial class KDebug
             }
         }
 
+        // History
         private static KQueue<ConsoleHistory> s_ConsoleHistory = null;
         private static KQueue<ConsoleHistory> s_CommandHistory = null;
-
         private static int s_MaxHistory = 10;
 
+        // Command Context
         private static GameObject s_CommandContext = null;
         public static GameObject CommandContext
         {
@@ -193,7 +156,7 @@ public static partial class KDebug
             return command;
         }
 
-        private static List<KTrie.ILookupQuery> LookupListBuffer = new List<KTrie.ILookupQuery>(10);
+        
         public static bool LookupBestMatches(string a_string, ref List<ICommand> a_list)
         {
             if (s_Initialised == false)

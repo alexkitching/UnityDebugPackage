@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class ExampleStats
 {
@@ -11,16 +9,5 @@ public static class ExampleStats
 
     public static Camera s_OverrideCam;
     
-    public static Camera s_ActiveCam
-    {
-        get
-        {
-            if (s_OverrideCam != null)
-            {
-                return s_OverrideCam;
-            }
-
-            return Camera.main;
-        }
-    }
+    public static Camera s_ActiveCam => s_OverrideCam != null ? s_OverrideCam : Camera.main;
 }

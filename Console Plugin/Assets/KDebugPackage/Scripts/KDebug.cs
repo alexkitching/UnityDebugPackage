@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 
 public partial class KDebug
 {
@@ -18,7 +15,7 @@ public partial class KDebug
 
     private static ILog s_logFile = null;
 
-    public static bool Initialise(KDebugData a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, DisplayHandler a_displayHandler)
+    public static bool Initialise(KDebugData a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, IDisplayHandler a_displayHandler)
     {
         s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");
 
@@ -96,7 +93,7 @@ public partial class KDebug
         return (bool)consoleInitMethodInfo?.Invoke(null, new object[] {a_handler});
     }
 
-    private static bool InitialiseDisplayManager(DisplayHandler a_displayHandler)
+    private static bool InitialiseDisplayManager(IDisplayHandler a_displayHandler)
     {
         Type dispMgrT = typeof(DisplayManager);
         MethodInfo dispMgrMthdInfo = dispMgrT.GetMethod("Initialise", 
@@ -148,6 +145,5 @@ public partial class KDebug
     {
         return Timestamp.Now()+ " - " + a_value;
     }
-
 
 }
