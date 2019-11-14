@@ -453,14 +453,13 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         }
     }
 
-    public void OnWriteToConsole(string a_value, Color a_printColor)
+    public void OnWriteToConsole(string a_value)
     {
         if (gameObject.activeSelf == false)
             return;
 
         TextMeshProUGUI newHistory = _HistoryItemPool.Pop();
         newHistory.text = a_value;
-        newHistory.color = a_printColor;
         newHistory.rectTransform.SetParent(_HistoryRect, false);
         newHistory.canvasRenderer.cull = false;
 

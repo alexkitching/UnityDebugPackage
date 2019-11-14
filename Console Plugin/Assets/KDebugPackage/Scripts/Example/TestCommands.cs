@@ -51,7 +51,7 @@ public partial class KDebug
     
                 Spawn(new Vector3(x, y, z));
     
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
     
     
@@ -105,7 +105,7 @@ public partial class KDebug
                 }
     
                 Spawn(new Vector3(x, y, z));
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
     
     
@@ -138,7 +138,7 @@ public partial class KDebug
                     ExampleStats.s_Health += value;
                 }
 
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
         }
 
@@ -154,7 +154,7 @@ public partial class KDebug
             CommandResult ICommand.Run(params string[] a_args)
             {
                 ExampleStats.s_Health = 0;
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
         }
     
@@ -179,7 +179,7 @@ public partial class KDebug
                     float value = float.Parse(a_args[0]);
                     ExampleStats.s_Mana += value;
                 }
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
         }
     
@@ -219,7 +219,7 @@ public partial class KDebug
                     }
                 }
 
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
         }
     
@@ -265,7 +265,7 @@ public partial class KDebug
     
                 KDebug.Console.CommandContext.transform.position = new Vector3(x,y,z);
     
-                return CommandResult.Default("GO: " + KDebug.Console.CommandContext.name + " moved to: " + KDebug.Console.CommandContext.transform.position);
+                return new CommandResult("GO: " + KDebug.Console.CommandContext.name + " moved to: " + KDebug.Console.CommandContext.transform.position);
             }
         }
 
@@ -325,7 +325,7 @@ public partial class KDebug
 
                 KDebug.Console.CommandContext.transform.Translate(new Vector3(x,y,z), space);
     
-                return CommandResult.Default("GO: " + KDebug.Console.CommandContext.name + " translated to: " + KDebug.Console.CommandContext.transform.position);
+                return new CommandResult("GO: " + KDebug.Console.CommandContext.name + " translated to: " + KDebug.Console.CommandContext.transform.position);
             }
         }
     
@@ -351,7 +351,7 @@ public partial class KDebug
     
             CommandResult ICommand.Run(params string[] a_args)
             {
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
         }
     
@@ -382,7 +382,7 @@ public partial class KDebug
                     }
                 }
 
-                return CommandResult.Default("Success");
+                return new CommandResult("Success");
             }
 
 
@@ -407,7 +407,7 @@ public partial class KDebug
                 }
 
                 s_logFile.WriteLine(final);
-                return CommandResult.Default(TimeStampLog(final));
+                return new CommandResult(TimeStampLog(final));
             }
         }
         

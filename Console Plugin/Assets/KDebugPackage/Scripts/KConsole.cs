@@ -9,22 +9,14 @@ public struct CommandResult
     public CommandResult(string a_value)
     {
         Result = a_value;
-        PrintColor = Color.white;
-    }
-
-    public CommandResult(string a_value, Color a_printColor)
-    {
-        Result = a_value;
-        PrintColor = a_printColor;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CommandResult Default(string a_value) {return new CommandResult(a_value, Color.white);}
+    public static CommandResult Warning(string a_value) { return new CommandResult("<color=yellow>" + a_value); }
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static CommandResult Error(string a_value) { return new CommandResult(a_value, Color.red); }
+    public static CommandResult Error(string a_value) { return new CommandResult("<color=red>" + a_value); }
 
     public string Result;
-    public Color PrintColor;
 }
 
 public interface ICommand
@@ -47,7 +39,7 @@ public interface IConsoleHandler
 
     // Parsing
 
-    void OnWriteToConsole(string a_value, Color a_color);
+    void OnWriteToConsole(string a_value);
 
     void OnVisualChange();
 }
@@ -60,20 +52,17 @@ public static partial class KDebug
         {
             public LogData Data;
             public ICommand Command;
-            public Color PrintColor;
 
-            public ConsoleHistory(string a_value, ICommand a_command, Color a_printColor)
+            public ConsoleHistory(string a_value, ICommand a_command)
             {
                 Data = new LogData(a_value);
                 Command = a_command;
-                PrintColor = a_printColor;
             }
 
-            public ConsoleHistory(LogData a_data, ICommand a_command, Color a_printColor)
+            public ConsoleHistory(LogData a_data, ICommand a_command)
             {
                 Data = a_data;
                 Command = a_command;
-                PrintColor = a_printColor;
             }
         }
 
@@ -248,9 +237,9 @@ public static partial class KDebug
         {
             CommandResult result = a_command.Run(a_args);
             
-            WriteToHistory(new ConsoleHistory(result.Result, a_command, Color.white));
+            WriteToHistory(new ConsoleHistory(result.Result, a_command));
 
-            s_Handler.OnWriteToConsole(result.Result, result.PrintColor);
+            s_Handler.OnWriteToConsole(result.Result);
         }
 
         public static void SetCommandContext(GameObject a_object)
@@ -263,8 +252,8 @@ public static partial class KDebug
             if (s_Initialised == false)
                 return;
 
-            WriteToHistory(new ConsoleHistory(a_value, null, Color.white));
-            s_Handler.OnWriteToConsole(a_value, Color.white);
+            WriteToHistory(new ConsoleHistory(a_value, null));
+            s_Handler.OnWriteToConsole(a_value);
         }
 
         public static void DumpHistoryToHandler()
@@ -272,7 +261,7 @@ public static partial class KDebug
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
             {
                 ConsoleHistory history = s_ConsoleHistory[i];
-                s_Handler.OnWriteToConsole(history.Data.Value, history.PrintColor);
+                s_Handler.OnWriteToConsole(history.Data.Value);
             }
         }
 
