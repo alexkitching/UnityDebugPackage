@@ -317,6 +317,16 @@ namespace TMPro
         private float m_KeyDownStartTime;
         private float m_DoubleClickDelay = 0.5f;
 
+        [SerializeField]
+        private bool m_IsModal = true;
+
+        public bool IsModal => m_IsModal;
+
+        public void SetIsModal(bool a_value)
+        {
+            m_IsModal = a_value;
+        }
+
         // Doesn't include dot and @ on purpose! See usage for details.
         const string kEmailSpecialCharacters = "!#$%&'*+-/=?^_`{|}~";
 
@@ -1355,6 +1365,12 @@ namespace TMPro
         // TODO: Make LateUpdate a coroutine instead. Allows us to control the update to only be when the field is active.
         protected virtual void LateUpdate()
         {
+            if (m_IsModal && EventSystem.current.currentSelectedGameObject != gameObject)
+            {
+                EventSystem.current.SetSelectedGameObject(gameObject);
+            }
+                
+
             // Only activate if we are not already activated.
             if (m_ShouldActivateNextUpdate)
             {
@@ -3835,9 +3851,13 @@ namespace TMPro
             m_IsScrollbarUpdateRequired = true;
         }
 
+        
         public override void OnDeselect(BaseEventData eventData)
         {
-            DeactivateInputField();
+            if (m_IsModal == false) // Don't Deactivate on Deselect if Modal, we will reset our selection in late update.
+            {
+                DeactivateInputField();
+            }
 
             base.OnDeselect(eventData);
             SendOnFocusLost();
