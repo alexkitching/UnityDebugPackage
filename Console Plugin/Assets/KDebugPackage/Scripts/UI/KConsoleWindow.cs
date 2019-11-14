@@ -332,6 +332,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             return;
         }
         ParseConsoleInputSB(input);
+        //ParseConsoleInput(input.Split(' '));
     }
 
     public void OnInputEndEdit()
@@ -339,6 +340,8 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         string input = _inputField.text;
         string[] inputStrings = input.Split(' ');
         string[] inputParams = null;
+
+        ResetPredictionItems();
 
         if (inputStrings.Length > 0)
         {
@@ -533,17 +536,19 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         bool bCommandParsed = false;
         bool bSubStringComplete = false;
         int ArgCount = 0;
+        int subStrCount = 1;
         for (int i = 0; i < _rawInput.Length; ++i)
         {
             char c = _rawInput[i];
             bool bIsSeparatorToken = c == ' ';
             bool bLastCharacter = i + 1 == _rawInput.Length;
-
+            
             if (bSubStringComplete == false) // Building Substring
             {
                 if (bIsSeparatorToken) // Substring Complete
                 {
                     bSubStringComplete = true;
+                    subStrCount++;
                 }
                 else if (bLastCharacter) // Last Character - Complete
                 {
@@ -628,6 +633,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
                 }
             }
         }
+        _currentInputLength = subStrCount;
         _rawInput.Clear();
     }
 
