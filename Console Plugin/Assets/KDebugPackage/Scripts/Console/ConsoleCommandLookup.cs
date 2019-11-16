@@ -5,8 +5,11 @@ public partial class KDebug
     private class ConsoleCommandLookup
     {
         private readonly KTrie _prefixTree = new KTrie();
+
+        // Registration
         private readonly ICommand[] _registeredCommands = null;
         private int _nextCommandID = 0;
+
         private List<KTrie.ILookupQuery> _lookupListBuffer = new List<KTrie.ILookupQuery>(10);
 
         public ConsoleCommandLookup(int a_maxCommands)
@@ -21,35 +24,37 @@ public partial class KDebug
 
             if (bSuccess) 
             {
-                _registeredCommands[_nextCommandID++] = a_command; // Store Command in Array at index
+                _registeredCommands[_nextCommandID++] = a_command; // Store Command in Array at index and increment next ID
             }
 
             return bSuccess;
         }
-
 
         public bool CommandExists(string a_commandName)
         {
             return _prefixTree.StringExists(a_commandName.ToLowerInvariant());
         }
 
+        // Lookup a command with an exact matching name.
         public ICommand LookupExactMatch(string a_commandName)
         {
             ICommand command = null;
             KTrie.ILookupQuery query = _prefixTree.LookupExactMatch(a_commandName.ToLowerInvariant());
-            if (query.IsValid)
+
+            if (query.IsValid) // Was a Command found within the Prefix Tree
             {
-                command = _registeredCommands[query.ID];
+                command = _registeredCommands[query.ID]; 
             }
 
             return command;
         }
 
+        // Lookup a command with a partial matching name.
         public ICommand LookupBestMatch(string a_commandName)
         {
             ICommand command = null;
-
             KTrie.ILookupQuery query = _prefixTree.LookupBestMatch(a_commandName.ToLowerInvariant());
+
             if (query.IsValid)
             {
                 command = _registeredCommands[query.ID];
@@ -58,6 +63,7 @@ public partial class KDebug
             return command;
         }
 
+        // Lookup command/s with a partial matching name.
         public bool LookupBestMatches(string a_string, ref List<ICommand> a_list)
         {
             int matchCount = _prefixTree.LookupBestMatches(a_string.ToLowerInvariant(), ref _lookupListBuffer);

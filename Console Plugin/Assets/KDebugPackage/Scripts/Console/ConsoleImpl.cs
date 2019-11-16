@@ -4,7 +4,7 @@
     {
         public LogData Data;
         public readonly ICommand Command;
-
+        public bool HasValue => string.IsNullOrEmpty(Data.Value) == false;
         public ConsoleHistory(string a_value, ICommand a_command)
         {
             Data = new LogData(a_value);
@@ -96,7 +96,8 @@
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
             {
                 ConsoleHistory history = s_ConsoleHistory[i];
-                s_Handler.OnWriteToConsole(history.Data.PrintLog);
+                if(history.HasValue)
+                    s_Handler.OnWriteToConsole(history.Data.PrintLog);
             }
         }
     }
