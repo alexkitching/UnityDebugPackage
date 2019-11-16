@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 
 public partial class KDebug
 {
@@ -30,22 +29,12 @@ public partial class KDebug
         }
 
         // Init Console
-        bResult = InitialiseConsole(a_handler);
-
-        if (bResult == false)
-        {
-            Reset();
-            return false;
-        }
+        s_consoleImpl = new ConsoleImpl(a_handler);
+        s_consoleImpl.OnAwake();
 
         // Init Debug Display Manager
-        bResult = InitialiseDisplayManager(a_displayHandler);
-
-        if (bResult == false)
-        {
-            Reset();
-            return false;
-        }
+        s_displayManagerImpl = new DebugDisplayManagerImpl(a_data.DisplayData, a_displayHandler);
+        s_displayManagerImpl.OnAwake();
 
         TestCommands.Register();
 
@@ -61,8 +50,8 @@ public partial class KDebug
             return;
 
         s_Tracker.OnUpdate();
-        Console.Update();
-        DisplayManager.Update();
+        s_consoleImpl.OnUpdate();
+        s_displayManagerImpl.OnUpdate();
     }
 
     public static void OnGUI()
@@ -70,38 +59,12 @@ public partial class KDebug
         if (s_Initialised == false)
             return;
 
-        DisplayManager.OnGUI();
+        s_displayManagerImpl.OnGUI();
     }
 
     public static void Shutdown()
     {
         Reset();
-    }
-
-    private static bool InitialiseConsole(IConsoleHandler a_handler)
-    {
-        Type consoleType =  typeof(Console);
-
-        MethodInfo consoleInitMethodInfo = consoleType.GetMethod(  "Initialise",
-            BindingFlags.Static |
-            BindingFlags.Public |
-            BindingFlags.NonPublic);
-
-        if (consoleInitMethodInfo == null)
-            return false;
-
-        return (bool)consoleInitMethodInfo?.Invoke(null, new object[] {a_handler});
-    }
-
-    private static bool InitialiseDisplayManager(IDisplayHandler a_displayHandler)
-    {
-        Type dispMgrT = typeof(DisplayManager);
-        MethodInfo dispMgrMthdInfo = dispMgrT.GetMethod("Initialise", 
-            BindingFlags.Static |
-            BindingFlags.Public |
-            BindingFlags.NonPublic);
-
-        return (bool)dispMgrMthdInfo?.Invoke(null, new object[] {s_data.DisplayData, a_displayHandler});
     }
 
     private static bool InitialiseLog()
@@ -124,26 +87,19 @@ public partial class KDebug
 
         s_logFile = null;
 
-        Type consoleType =  typeof(Console);
-        MethodInfo consoleResetMethodInfo =
-            consoleType.GetMethod(  "Reset",
-                BindingFlags.Static |
-                BindingFlags.Public |
-                BindingFlags.NonPublic);
-
-        consoleResetMethodInfo?.Invoke(null, null);
+        s_consoleImpl = null;
+        s_displayManagerImpl = null;
     }
 
     public static void Log(string a_value)
     {
-        string finalLog = TimeStampLog(a_value);
-        Console.WriteTo(finalLog);
-        s_logFile.WriteLine(finalLog);
-    }
+        if (s_Initialised == false)
+            return;
 
-    private static string TimeStampLog(string a_value)
-    {
-        return Timestamp.Now()+ " - " + a_value;
+        LogData logData = new LogData(a_value);
+        s_consoleImpl.WriteToHistory(new ConsoleHistory(logData, null));
+
+        s_logFile.WriteLine(logData.PrintLog);
     }
 
 }

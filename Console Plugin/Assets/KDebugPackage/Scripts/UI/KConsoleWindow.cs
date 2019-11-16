@@ -397,6 +397,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     public void Close()
     {
+        _inputField.SetTextWithoutNotify("");
         gameObject.SetActive(false);
     }
 
@@ -805,13 +806,17 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             PredictionItem item = _predictionItems[itemIdx];
 
             _currentString.Append(predictedCommand.Name);
-            _currentString.Append(" - ");
-            for (int j = 0; j < predictedCommand.ArgCount; ++j)
+
+            if (predictedCommand.ArgCount != 0)
             {
-                _currentString.Append(predictedCommand.GetArgName(j));
-                if (j + 1 < predictedCommand.ArgCount)
+                _currentString.Append(" - ");
+                for (int j = 0; j < predictedCommand.ArgCount; ++j)
                 {
-                    _currentString.Append(", ");
+                    _currentString.Append(predictedCommand.GetArgName(j));
+                    if (j + 1 < predictedCommand.ArgCount)
+                    {
+                        _currentString.Append(", ");
+                    }
                 }
             }
 

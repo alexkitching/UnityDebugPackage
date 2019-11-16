@@ -42,9 +42,6 @@ public partial class KTrie
     #endregion
 
     private readonly KTrieNode m_Root;
-    private int m_nextCompleteID = 0;
-    public int GetNewCompleteID => m_nextCompleteID++;
-
     #region Constructors
 
     public KTrie()
@@ -62,10 +59,8 @@ public partial class KTrie
         return node != null;
     }
 
-    public bool Insert(string a_string, out int a_id)
+    public bool Insert(string a_string, int a_id)
     {
-        a_id = KTrieNode.InvalidCompleteID;
-
         LookupQuery query = LookupMatchForInsert(m_Root, a_string);
 
         if (query.IsValid == false)
@@ -114,7 +109,6 @@ public partial class KTrie
             query.Node.Children.Add(newChildNode);
         }
 
-        a_id = GetNewCompleteID;
         string postFix = a_string.Substring(query.TotalMatchingChars, a_string.Length - query.TotalMatchingChars);
         query.Node.Children.Add(new KTrieNode(postFix, query.Node, query.Node.Depth + postFix.Length, a_id));
         

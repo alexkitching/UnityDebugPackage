@@ -12,7 +12,7 @@ public partial class KTrie
         public int Depth { get; set; }
         public int CompleteID { get; set; }
 
-        public static int InvalidCompleteID = -1;
+        public static int InvalidCompleteID = -800001;
 
         public KTrieNode(string a_value, KTrieNode a_parent, int a_depth, int a_completeId)
         {

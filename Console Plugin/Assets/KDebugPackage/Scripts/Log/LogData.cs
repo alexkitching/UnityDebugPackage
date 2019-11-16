@@ -30,20 +30,13 @@
         public Timestamp GetTimestamp => timestamp;
         private readonly string value;
         public string Value => value;
-        
 
-        public string LogString => timestamp.ToString() + "-";
+        public string PrintLog => timestamp.ToString() + ": " + value;
 
         public LogData(string a_value)
         {
-            timestamp = Timestamp.Now();
+            timestamp = KDebug.Timestamp.Now();
             value = a_value;
-        }
-
-        public LogData(LogData a_data)
-        {
-            value = a_data.Value;
-            timestamp = a_data.GetTimestamp;
         }
     }
 }

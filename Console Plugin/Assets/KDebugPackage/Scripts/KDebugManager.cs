@@ -16,6 +16,7 @@ public class KDebugManager : MonoBehaviour
         {
             throw new NullReferenceException("Data object is null!");
         }
+        DontDestroyOnLoad(this);
 
         // Init KDebug
         KDebug.Initialise(_dataObject.Data, _consoleWindow, new KPerformanceTracker(), _displayHandler);

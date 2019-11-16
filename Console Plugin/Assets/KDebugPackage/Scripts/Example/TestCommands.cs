@@ -24,7 +24,7 @@ public partial class KDebug
                 }
                 return string.Empty;
             }
-    
+
             CommandResult ICommand.Run(params string[] a_args)
             {
                 if (a_args.Length != ArgCount)
@@ -56,7 +56,7 @@ public partial class KDebug
             static void Spawn(Vector3 a_pos)
             {
                 GameObject cubeObject = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                GameObject.Instantiate(cubeObject, a_pos, Quaternion.identity);
+                cubeObject.transform.position = a_pos;
             }
         }
     
@@ -110,7 +110,7 @@ public partial class KDebug
             static void Spawn(Vector3 a_pos)
             {
                 GameObject sphereObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                GameObject.Instantiate(sphereObject, a_pos, Quaternion.identity);
+                sphereObject.transform.position = a_pos;
             }
         }
 
@@ -184,37 +184,28 @@ public partial class KDebug
         private class NoclipCommand : ICommand
         {
             string ICommand.Name => "Noclip";
-            public int ArgCount => 1;
+            public int ArgCount => 0;
             string ICommand.GetArgName(int a_argIndex)
             {
-                switch (a_argIndex)
-                {
-                    case 0:
-                        return "Value:Bool";
-                }
                 return string.Empty;
             }
 
             private GameObject noclipObj = null;
             CommandResult ICommand.Run(params string[] a_args)
             {
-                if (a_args.Length == ArgCount &&
-                    bool.TryParse(a_args[0], out bool value))
+                if (noclipObj == null)
                 {
-                    if (value && noclipObj == null)
-                    {
-                        Transform playerTransform = ExampleStats.s_Transform;
+                    Transform playerTransform = ExampleStats.s_Transform;
 
-                        if (playerTransform != null)
-                        {
-                            noclipObj = GameObject.Instantiate(playerTransform.gameObject);
-                            noclipObj.AddComponent<NoclipCamera>();
-                        }
-                    }
-                    else if(noclipObj != null)
+                    if (playerTransform != null)
                     {
-                        GameObject.Destroy(noclipObj);
+                        noclipObj = GameObject.Instantiate(playerTransform.gameObject);
+                        noclipObj.AddComponent<NoclipCamera>();
                     }
+                }
+                else
+                {
+                    GameObject.Destroy(noclipObj);
                 }
 
                 return new CommandResult("Success");
@@ -404,8 +395,10 @@ public partial class KDebug
                     final += a_args[i] + " ";
                 }
 
-                s_logFile.WriteLine(final);
-                return new CommandResult(TimeStampLog(final));
+                LogData logData = new LogData(final);
+
+                s_logFile.WriteLine(logData.PrintLog);
+                return new CommandResult(logData.PrintLog);
             }
         }
         
