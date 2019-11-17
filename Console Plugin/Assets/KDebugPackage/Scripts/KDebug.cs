@@ -1,105 +1,112 @@
 ﻿using System;
 
-public partial class KDebug
+namespace KDebugPackage
 {
-    private static bool s_Initialised = false;
-    private static Data s_data;
+    using Log;
+    using Console;
+    using Performance;
+    using DebugDisplay;
 
-    private static IPerformanceTracker s_Tracker = null;
-    public static IPerformanceTracker Tracker => s_Tracker;
-
-    public static VisualSchemeData GetVisualData => s_data.VisualData;
-
-    private static readonly string s_logFilePath = UnityEngine.Application.persistentDataPath + "/" + "KDebugLog.log";
-
-    private static ILog s_logFile = null;
-
-    public static bool Initialise(Data a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, IDisplayHandler a_displayHandler)
+    public partial class KDebug
     {
-        s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");
+        private static bool s_Initialised = false;
+        private static Data.Data s_data;
 
-        bool bResult = false;
+        private static Performance.IPerformanceTracker s_Tracker = null;
+        public static Performance.IPerformanceTracker Tracker => s_Tracker;
+        public static Data.VisualSchemeData GetVisualData => s_data.VisualData;
 
-        // Init Log
-        bResult = InitialiseLog();
-        if (bResult == false)
+        private static readonly string s_logFilePath = UnityEngine.Application.persistentDataPath + "/" + "KDebugLog.log";
+
+        private static ILog s_logFile = null;
+
+        public static bool Initialise(Data.Data a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, IDisplayHandler a_displayHandler)
         {
-            Reset();
-            return false;
+            s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");
+
+            bool bResult = false;
+
+            // Init Log
+            bResult = InitialiseLog();
+            if (bResult == false)
+            {
+                Reset();
+                return false;
+            }
+
+            // Init Console
+            s_consoleImpl = new ConsoleImpl(a_handler, s_data.ConsoleData);
+            s_consoleImpl.OnAwake(s_data.ConsoleData);
+
+            // Init Debug Display Manager
+            s_displayManagerImpl = new DebugDisplayManagerImpl(a_data.DisplayData, a_displayHandler);
+            s_displayManagerImpl.OnAwake();
+
+            TestCommands.Register();
+
+            s_Tracker = a_tracker;
+            s_Tracker.OnAwake();
+            s_Initialised = true;
+            return true;
         }
 
-        // Init Console
-        s_consoleImpl = new ConsoleImpl(a_handler);
-        s_consoleImpl.OnAwake();
+        public static void Update()
+        {
+            if (s_Initialised == false)
+                return;
 
-        // Init Debug Display Manager
-        s_displayManagerImpl = new DebugDisplayManagerImpl(a_data.DisplayData, a_displayHandler);
-        s_displayManagerImpl.OnAwake();
+            s_Tracker.OnUpdate();
+            s_consoleImpl.OnUpdate();
+            s_displayManagerImpl.OnUpdate();
+        }
 
-        TestCommands.Register();
+        public static void OnGUI()
+        {
+            if (s_Initialised == false)
+                return;
 
-        s_Tracker = a_tracker;
-        s_Tracker.OnAwake();
-        s_Initialised = true;
-        return true;
-    }
+            s_displayManagerImpl.OnGUI();
+        }
 
-    public static void Update()
-    {
-        if (s_Initialised == false)
-            return;
+        public static void Shutdown()
+        {
+            Reset();
+        }
 
-        s_Tracker.OnUpdate();
-        s_consoleImpl.OnUpdate();
-        s_displayManagerImpl.OnUpdate();
-    }
-
-    public static void OnGUI()
-    {
-        if (s_Initialised == false)
-            return;
-
-        s_displayManagerImpl.OnGUI();
-    }
-
-    public static void Shutdown()
-    {
-        Reset();
-    }
-
-    private static bool InitialiseLog()
-    {
-        #if UNITY_STANDALONE
-        s_logFile = new KWinLog();
-        #else
+        private static bool InitialiseLog()
+        {
+#if UNITY_STANDALONE
+            s_logFile = new KWinLog();
+#else
         throw new NotImplementedException();
-        #endif
+#endif
 
-        return s_logFile.Initialise(s_logFilePath);
+            return s_logFile.Initialise(s_logFilePath);
+        }
+
+        private static void Reset()
+        {
+            s_Initialised = false;
+            s_data = null;
+
+            s_logFile?.Shutdown();
+
+            s_logFile = null;
+
+            s_consoleImpl = null;
+            s_displayManagerImpl = null;
+        }
+
+        public static void Log(string a_value)
+        {
+            if (s_Initialised == false)
+                return;
+
+            LogData logData = new LogData(a_value);
+            s_consoleImpl.WriteToHistory(new ConsoleHistory(logData, null));
+
+            s_logFile.WriteLine(logData.PrintLog);
+        }
+
     }
-
-    private static void Reset()
-    {
-        s_Initialised = false;
-        s_data = null;
-
-        s_logFile?.Shutdown();
-
-        s_logFile = null;
-
-        s_consoleImpl = null;
-        s_displayManagerImpl = null;
-    }
-
-    public static void Log(string a_value)
-    {
-        if (s_Initialised == false)
-            return;
-
-        LogData logData = new LogData(a_value);
-        s_consoleImpl.WriteToHistory(new ConsoleHistory(logData, null));
-
-        s_logFile.WriteLine(logData.PrintLog);
-    }
-
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public partial class KDebug
+namespace KDebugPackage.DataStructures.Trie
 {
     public partial class KTrie
     {

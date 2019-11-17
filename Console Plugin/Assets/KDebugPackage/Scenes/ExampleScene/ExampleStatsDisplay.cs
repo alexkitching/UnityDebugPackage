@@ -1,4 +1,6 @@
-﻿public class ExampleStatsDisplay : DebugDisplay
+﻿using KDebugPackage.DebugDisplay;
+
+public class ExampleStatsDisplay : DebugDisplayBase
 {
     public override void OnGUI()
     {

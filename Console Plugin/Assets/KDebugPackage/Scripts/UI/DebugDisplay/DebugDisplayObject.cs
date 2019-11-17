@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using KDebugPackage.DebugDisplay;
 
 [RequireComponent(typeof(RectTransform))]
 public class DebugDisplayObject : MonoBehaviour, IDebugDisplayUIObject

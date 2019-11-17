@@ -1,7 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-public partial class KDebug
+
+namespace KDebugPackage.DataStructures.Trie
 {
     public partial class KTrie
     {
@@ -75,7 +76,8 @@ public partial class KDebug
                 query.Node.Children.Add(newChildNode);
             }
 
-            string postFix = a_string.Substring(query.TotalMatchingChars, a_string.Length - query.TotalMatchingChars);
+            string postFix =
+                a_string.Substring(query.TotalMatchingChars, a_string.Length - query.TotalMatchingChars);
             query.Node.Children.Add(new Node(postFix, query.Node, query.Node.Depth + postFix.Length, a_id));
 
             return true;
@@ -255,7 +257,8 @@ public partial class KDebug
                     if (j < a_matchList.Count - 1) // Another match is still to compare
                     {
                         LookupQuery nextMatch = (LookupQuery) a_matchList[j];
-                        if (nextMatch.Node.Depth > a_potentialMatch.Depth) // The next match is also worse, move along
+                        if (nextMatch.Node.Depth > a_potentialMatch.Depth
+                        ) // The next match is also worse, move along
                         {
                             continue;
                         }

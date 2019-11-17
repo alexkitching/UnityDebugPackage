@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using KDebugPackage;
+using KDebugPackage.DebugDisplay;
 
 /// <summary>
 /// Implementation of the Display Handler Interface

@@ -1,6 +1,8 @@
-﻿public static partial class KDebug
+﻿namespace KDebugPackage.DebugDisplay
 {
-    private class DebugDisplayManagerImpl
+    using Data;
+
+    public class DebugDisplayManagerImpl
     {
         private readonly DebugTabbedDisplay _primaryDisplay = new DebugTabbedDisplay();
         private readonly IDisplayHandler _handler = null;
@@ -29,32 +31,32 @@
             _handler.OnGUI();
         }
 
-        public T RegisterDisplay<T>() where T : DebugDisplay, new()
+        public T RegisterDisplay<T>() where T : DebugDisplayBase, new()
         {
             T type = new T();
-            DebugDisplay display = type;
+            DebugDisplayBase display = type;
 
             _handler.AddDisplay(display);
 
             return type;
         }
 
-        public void RegisterDisplay(DebugDisplay a_display)
+        public void RegisterDisplay(DebugDisplayBase a_display)
         {
             _handler.AddDisplay(a_display);
         }
 
-        public T RegisterDisplayAsPrimaryTab<T>() where T : DebugDisplay, new()
+        public T RegisterDisplayAsPrimaryTab<T>() where T : DebugDisplayBase, new()
         {
             T type = new T();
-            DebugDisplay display = type;
+            DebugDisplayBase display = type;
 
             _primaryDisplay.AddTab(display);
 
             return type;
         }
 
-        public void RegisterDisplayAsPrimaryTab(DebugDisplay a_display)
+        public void RegisterDisplayAsPrimaryTab(DebugDisplayBase a_display)
         {
             _primaryDisplay.AddTab(a_display);
         }
@@ -72,3 +74,4 @@
         }
     }
 }
+    

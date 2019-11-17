@@ -1,6 +1,6 @@
 ﻿using System;
 
-public static partial class KDebug
+namespace KDebugPackage.DataStructures.Containers
 {
     /// <summary>
     /// Queue Implementation with Array Accessor allowing for looping.
@@ -35,6 +35,7 @@ public static partial class KDebug
         }
 
         public T Front => _elements[_head];
+
         public T Back
         {
             get
@@ -44,6 +45,7 @@ public static partial class KDebug
                 {
                     actualTail = Capacity - 1;
                 }
+
                 return _elements[actualTail];
             }
         }
@@ -104,7 +106,7 @@ public static partial class KDebug
 
             if (_head > _tail ||
                 (_head == _tail &&
-                _head != 0)) // Start/End are split
+                 _head != 0)) // Start/End are split
             {
                 // Head - Len
                 int headDestination = 0;
@@ -129,6 +131,7 @@ public static partial class KDebug
             {
                 Array.Copy(_elements, _head, newElements, 0, _tail - _head);
             }
+
             _elements = newElements;
         }
 

@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 
-public partial class KDebug
+namespace KDebugPackage.Console
 {
-    private class ConsoleCommandLookup
+    using DataStructures.Trie;
+    class ConsoleCommandLookup
     {
         private readonly KTrie _prefixTree = new KTrie();
 
@@ -22,9 +23,10 @@ public partial class KDebug
             // Try Inserting Name to Tree
             bool bSuccess = _prefixTree.Insert(a_command.Name.ToLowerInvariant(), _nextCommandID);
 
-            if (bSuccess) 
+            if (bSuccess)
             {
-                _registeredCommands[_nextCommandID++] = a_command; // Store Command in Array at index and increment next ID
+                _registeredCommands[_nextCommandID++] =
+                    a_command; // Store Command in Array at index and increment next ID
             }
 
             return bSuccess;
@@ -43,7 +45,7 @@ public partial class KDebug
 
             if (query.IsValid) // Was a Command found within the Prefix Tree
             {
-                command = _registeredCommands[query.ID]; 
+                command = _registeredCommands[query.ID];
             }
 
             return command;
@@ -77,6 +79,7 @@ public partial class KDebug
                     a_list.Add(command);
                 }
             }
+
             _lookupListBuffer.Clear();
 
             return a_list.Count != 0;

@@ -3842,7 +3842,11 @@ namespace TMPro
                 SendOnEndEdit();
                 SendOnEndTextSelection();
 
-                inputSystem.imeCompositionMode = IMECompositionMode.Auto;
+                BaseInput inputSys = inputSystem;
+                if (inputSys != null)
+                {
+                    inputSys.imeCompositionMode = IMECompositionMode.Auto;
+                }
             }
 
             MarkGeometryAsDirty();

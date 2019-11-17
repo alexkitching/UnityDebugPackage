@@ -1,10 +1,13 @@
-﻿public interface IDisplayHandler
+﻿namespace KDebugPackage.DebugDisplay
 {
-    void OnAwake();
-    void OnUpdate();
-    void OnGUI();
+    public interface IDisplayHandler
+    {
+        void OnAwake();
+        void OnUpdate();
+        void OnGUI();
 
-    void AddDisplay(IDebugDisplay a_display);
-    void RemoveDisplay(IDebugDisplay a_display);
-    void OnVisualChange();
+        void AddDisplay(IDebugDisplay a_display);
+        void RemoveDisplay(IDebugDisplay a_display);
+        void OnVisualChange();
+    }
 }

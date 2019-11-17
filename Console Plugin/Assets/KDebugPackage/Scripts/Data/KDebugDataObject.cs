@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 
-public class KDebugDataObject : MonoBehaviour
+namespace KDebugPackage.Data
 {
-    [SerializeField]
-    private KDebug.Data _data = null;
-    public KDebug.Data Data => _data;
-
-    public void Awake()
+    public class KDebugDataObject : MonoBehaviour
     {
-        Debug.Assert(_data != null, "KDebugDataObject :: NO DATA REFERENCED!");
+        [SerializeField] private Data _data = null;
+        public Data Data => _data;
+
+        public void Awake()
+        {
+            Debug.Assert(_data != null, "KDebugDataObject :: NO DATA REFERENCED!");
+        }
     }
 }

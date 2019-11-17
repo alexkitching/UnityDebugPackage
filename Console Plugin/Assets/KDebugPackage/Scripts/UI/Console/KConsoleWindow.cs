@@ -6,6 +6,10 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+using KDebugPackage;
+using KDebugPackage.Console;
+using KDebugPackage.Data;
+
 
 public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
 {
@@ -83,7 +87,7 @@ public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     #region Mono Functions
 
-    void IConsoleHandler.OnAwake(KDebug.ConsoleData a_data)
+    void IConsoleHandler.OnAwake(ConsoleData a_data)
     {
         _inputField.characterLimit = a_data.MaxConsoleInput;
         _rawInput = new StringBuilder(a_data.MaxConsoleInput);

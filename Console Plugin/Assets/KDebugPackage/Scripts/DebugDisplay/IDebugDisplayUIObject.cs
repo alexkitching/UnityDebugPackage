@@ -1,6 +1,10 @@
 ﻿using UnityEngine;
-public interface IDebugDisplayUIObject
+
+namespace KDebugPackage.DebugDisplay
 {
-    RectTransform Rect { get; }
-    Color Colour { get; set; }
+    public interface IDebugDisplayUIObject
+    {
+        RectTransform Rect { get; }
+        Color Colour { get; set; }
+    }
 }

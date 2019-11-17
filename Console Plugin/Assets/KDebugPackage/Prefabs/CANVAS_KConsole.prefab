@@ -309,6 +309,7 @@ GameObject:
   m_Component:
   - component: {fileID: 361033413311359375}
   - component: {fileID: 6013636386167869597}
+  - component: {fileID: 6165985267915758156}
   m_Layer: 5
   m_Name: OBJ_TextPort
   m_TagString: Untagged
@@ -348,6 +349,19 @@ MonoBehaviour:
   m_Script: {fileID: -146154839, guid: f70555f144d8491a825f0804e09c671c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &6165985267915758156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3454457410113573357}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: -1200242548, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShowMaskGraphic: 1
 --- !u!1 &4203678534339742958
 GameObject:
   m_ObjectHideFlags: 0
@@ -899,7 +913,7 @@ GameObject:
   - component: {fileID: 7620418239644332559}
   - component: {fileID: 7620418239644332558}
   m_Layer: 5
-  m_Name: TXT_InputText
+  m_Name: TEXT_InputText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -997,7 +1011,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 4
+  m_overflowMode: 0
   m_firstOverflowCharacterIndex: -1
   m_linkedTextComponent: {fileID: 0}
   m_isLinkedTextComponent: 0
@@ -1524,6 +1538,7 @@ MonoBehaviour:
   m_CaretWidth: 1
   m_ReadOnly: 0
   m_RichText: 1
+  m_IsModal: 1
   m_GlobalFontAsset: {fileID: 0}
   m_OnFocusSelectAll: 1
   m_ResetOnDeActivation: 0
@@ -1622,7 +1637,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7620418240759854754
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1663,26 +1678,28 @@ MonoBehaviour:
   _inputField: {fileID: 1541754961269114466}
   _predictionItemTemplate: {fileID: 5332359706102397638}
   _predictionItemRoot: {fileID: 2394110998230808283}
-  _HistoryRect: {fileID: 7620418241027462756}
-  _HistoryTemplate: {fileID: 7620418239084783156}
-  _HistoryImageBacker: {fileID: 4027726746161514079}
-  _RaycastLayers:
+  _historyRect: {fileID: 7620418241027462756}
+  _historyTemplate: {fileID: 7620418239084783156}
+  _historyImageBacker: {fileID: 4027726746161514079}
+  _raycastLayers:
     serializedVersion: 2
-    m_Bits: 4294967295
+    m_Bits: 1
   _contextRect: {fileID: 3779509947651741819}
   _contextText: {fileID: 1815817999530817160}
   _rememberLastCommandOnOpen: 0
-  primaryImages:
+  _primaryImages:
   - {fileID: 6556027606835828295}
+  - {fileID: 4027726746161514079}
   - {fileID: 2654806165337349365}
-  secondaryImages:
-  - {fileID: 2774246904933181177}
+  _secondaryImages:
   - {fileID: 5840308257171691254}
-  primaryText:
-  - {fileID: 7620418240242415440}
-  - {fileID: 1815817999530817160}
-  secondaryText:
+  - {fileID: 2774246904933181177}
+  _primaryText:
   - {fileID: 7620418239644332558}
+  - {fileID: 7620418240242415440}
+  _secondaryText:
+  - {fileID: 1815817999530817160}
+  - {fileID: 3647899639280176584}
 --- !u!223 &7620418240759854752
 Canvas:
   m_ObjectHideFlags: 0

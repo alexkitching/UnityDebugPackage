@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using KDebugPackage;
+using KDebugPackage.DebugDisplay;
 
-public class PerformanceDisplay : DebugDisplay
+public class PerformanceDisplay : DebugDisplayBase
 {
     public PerformanceDisplay(Color a_gcIconColor, Color a_longFrameIconColor)
     {

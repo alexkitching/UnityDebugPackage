@@ -1,7 +1,6 @@
-﻿
-public partial class KDebug
+﻿namespace KDebugPackage.Log
 {
-    private interface ILog
+    interface ILog
     {
         bool Initialise(string a_path);
         void WriteLine(string a_value);

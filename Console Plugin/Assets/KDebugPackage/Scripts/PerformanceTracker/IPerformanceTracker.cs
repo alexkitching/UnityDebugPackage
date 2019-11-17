@@ -1,4 +1,4 @@
-﻿public static partial class KDebug
+﻿namespace KDebugPackage.Performance
 {
     /// <summary>
     /// Interface for PerformanceTracker
@@ -18,4 +18,4 @@
         void OnAwake();
         void OnUpdate();
     }
-}   
+}

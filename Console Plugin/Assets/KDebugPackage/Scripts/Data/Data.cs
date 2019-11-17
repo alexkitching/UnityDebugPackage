@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public partial class KDebug
+namespace KDebugPackage.Data
 {
     [System.Serializable]
     public class VisualSchemeData
@@ -56,6 +56,7 @@ public partial class KDebug
         };
     }
 
+
     [CreateAssetMenu(fileName = "KDebugData", menuName = "KDebug/KDebugData")]
     public class Data : ScriptableObject
     {
@@ -72,4 +73,3 @@ public partial class KDebug
         public VisualSchemeData VisualData;
     }
 }
-

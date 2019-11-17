@@ -1,13 +1,17 @@
-﻿public interface IConsoleHandler
+﻿
+namespace KDebugPackage.Console
 {
-    void OnAwake(KDebug.ConsoleData a_data);
-    void OnUpdate();
+    public interface IConsoleHandler
+    {
+        void OnAwake(Data.ConsoleData a_data);
+        void OnUpdate();
 
-    bool IsOpen { get;}
-    void Open();
-    void Close();
+        bool IsOpen { get; }
+        void Open();
+        void Close();
 
-    void OnWriteToConsole(string a_value);
+        void OnWriteToConsole(string a_value);
 
-    void OnVisualChange();
+        void OnVisualChange();
+    }
 }

@@ -1,6 +1,9 @@
-﻿public static partial class KDebug
+﻿namespace KDebugPackage.Console
 {
-    private struct ConsoleHistory
+    using Data;
+    using Log;
+    using DataStructures.Containers;
+    struct ConsoleHistory
     {
         public LogData Data;
         public readonly ICommand Command;
@@ -19,7 +22,7 @@
         }
     }
 
-    private class ConsoleImpl
+    class ConsoleImpl
     {
         public ConsoleCommandLookup CommandLookup { get; } = null;
 
@@ -32,22 +35,23 @@
         private readonly KQueue<ConsoleHistory> s_CommandHistory = null;
         private readonly int s_MaxHistory = 10;
 
-        public ConsoleImpl(IConsoleHandler a_handler)
+
+        public ConsoleImpl(IConsoleHandler a_handler, ConsoleData a_data)
         {
-            CommandLookup = new ConsoleCommandLookup(s_data.ConsoleData.MaxCommands);
+            CommandLookup = new ConsoleCommandLookup(a_data.MaxCommands);
             s_Handler = a_handler;
 
-            s_ConsoleHistory = new KQueue<ConsoleHistory>(s_data.ConsoleData.MaxHistory);
-            s_CommandHistory = new KQueue<ConsoleHistory>(s_data.ConsoleData.MaxHistory);
-            s_MaxHistory = s_data.ConsoleData.MaxHistory;
+            s_ConsoleHistory = new KQueue<ConsoleHistory>(a_data.MaxHistory);
+            s_CommandHistory = new KQueue<ConsoleHistory>(a_data.MaxHistory);
+            s_MaxHistory = a_data.MaxHistory;
         }
 
         /// <summary>
         /// Initialises the Console Handler
         /// </summary>
-        public void OnAwake()
+        public void OnAwake(ConsoleData a_data)
         {
-            s_Handler.OnAwake(s_data.ConsoleData);
+            s_Handler.OnAwake(a_data);
 
             if (s_Handler.IsOpen) // Ensure Console is Closed
                 s_Handler.Close();
@@ -111,7 +115,7 @@
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
             {
                 ConsoleHistory history = s_ConsoleHistory[i];
-                if(history.HasValue)
+                if (history.HasValue)
                     s_Handler.OnWriteToConsole(history.Data.PrintLog);
             }
         }
