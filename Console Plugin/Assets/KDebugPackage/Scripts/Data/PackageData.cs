@@ -17,11 +17,11 @@ namespace KDebugPackage.Data
         public static VisualSchemeData Default = new VisualSchemeData()
         {
             PrimaryColor = new Color(0f, 0f, 0f, 198f / 255f),
-            SecondaryColor = new Color(66f / 255f, 64f / 255f, 128f / 255f, 255f / 255f),
+            SecondaryColor = new Color(224f / 255f, 137f / 255f, 14f / 255f, 255f / 255f),
             PrimaryTextColor = Color.white,
             SecondaryTextColor = Color.grey,
             HistoryBackerAlpha = 120f / 255f,
-            PredictionTextAlpha = 120f / 255f
+            PredictionTextAlpha = 76.5f / 255f
         };
     }
 
@@ -57,10 +57,10 @@ namespace KDebugPackage.Data
     }
 
 
-    [CreateAssetMenu(fileName = "KDebugData", menuName = "KDebug/KDebugData")]
-    public class Data : ScriptableObject
+    [CreateAssetMenu(fileName = "PackageData", menuName = "KDebug/PackageData")]
+    public class PackageData : ScriptableObject
     {
-        public Data()
+        public PackageData()
         {
             ConsoleData = ConsoleData.Default;
             DisplayData = DisplayData.Default;

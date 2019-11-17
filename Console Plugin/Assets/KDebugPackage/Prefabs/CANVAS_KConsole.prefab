@@ -1689,17 +1689,15 @@ MonoBehaviour:
   _rememberLastCommandOnOpen: 0
   _primaryImages:
   - {fileID: 6556027606835828295}
-  - {fileID: 4027726746161514079}
   - {fileID: 2654806165337349365}
   _secondaryImages:
   - {fileID: 5840308257171691254}
   - {fileID: 2774246904933181177}
   _primaryText:
-  - {fileID: 7620418239644332558}
+  - {fileID: 1815817999530817160}
   - {fileID: 7620418240242415440}
   _secondaryText:
-  - {fileID: 1815817999530817160}
-  - {fileID: 3647899639280176584}
+  - {fileID: 7620418239644332558}
 --- !u!223 &7620418240759854752
 Canvas:
   m_ObjectHideFlags: 0

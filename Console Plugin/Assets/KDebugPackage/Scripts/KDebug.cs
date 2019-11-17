@@ -10,7 +10,7 @@ namespace KDebugPackage
     public partial class KDebug
     {
         private static bool s_Initialised = false;
-        private static Data.Data s_data;
+        private static Data.PackageData s_data;
 
         private static Performance.IPerformanceTracker s_Tracker = null;
         public static Performance.IPerformanceTracker Tracker => s_Tracker;
@@ -20,7 +20,7 @@ namespace KDebugPackage
 
         private static ILog s_logFile = null;
 
-        public static bool Initialise(Data.Data a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, IDisplayHandler a_displayHandler)
+        public static bool Initialise(Data.PackageData a_data, IConsoleHandler a_handler, IPerformanceTracker a_tracker, IDisplayHandler a_displayHandler)
         {
             s_data = a_data ?? throw new NullReferenceException("KDebug:: DEBUG DATA NULL");
 
