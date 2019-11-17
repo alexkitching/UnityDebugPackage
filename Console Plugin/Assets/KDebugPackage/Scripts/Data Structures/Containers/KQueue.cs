@@ -2,6 +2,9 @@
 
 public static partial class KDebug
 {
+    /// <summary>
+    /// Queue Implementation with Array Accessor allowing for looping.
+    /// </summary>
     public class KQueue<T>
     {
         private static int s_defaultQueueElements = 8;

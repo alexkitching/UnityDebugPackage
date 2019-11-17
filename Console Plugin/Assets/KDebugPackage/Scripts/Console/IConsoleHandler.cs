@@ -1,6 +1,6 @@
 ﻿public interface IConsoleHandler
 {
-    void OnAwake(ConsoleData a_data);
+    void OnAwake(KDebug.ConsoleData a_data);
     void OnUpdate();
 
     bool IsOpen { get;}

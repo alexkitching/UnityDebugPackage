@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 
-public class KConsoleWindow : MonoBehaviour, IConsoleHandler
+public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
 {
     // Input Fields
     [Header("Input Fields")]
@@ -37,19 +37,19 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     // History
     [Header("History")]
     [SerializeField]
-    private RectTransform _HistoryRect = null;
+    private RectTransform _historyRect = null;
     [SerializeField]
-    private TMPro.TextMeshProUGUI _HistoryTemplate = null;
+    private TMPro.TextMeshProUGUI _historyTemplate = null;
     [SerializeField]
-    private Image _HistoryImageBacker = null;
+    private Image _historyImageBacker = null;
 
-    private Transform _HistoryItemPoolRoot = null;
-    private Stack<TMPro.TextMeshProUGUI> _HistoryItemPool = null;
-    private Queue<TMPro.TextMeshProUGUI> _HistoryQueue = null;
+    private Transform _historyItemPoolRoot = null;
+    private Stack<TMPro.TextMeshProUGUI> _historyItemPool = null;
+    private Queue<TMPro.TextMeshProUGUI> _historyQueue = null;
 
     [Header("Context Object Raycast")]
     [SerializeField]
-    private LayerMask _RaycastLayers;
+    private LayerMask _raycastLayers;
 
     [SerializeField] 
     private RectTransform _contextRect = null;
@@ -64,31 +64,33 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     [Header("Visuals")] 
     [SerializeField]
-    private Image[] primaryImages = null;
+    private Image[] _primaryImages = null;
     [SerializeField]
-    private Image[] secondaryImages = null;
+    private Image[] _secondaryImages = null;
     [SerializeField]
-    private TextMeshProUGUI[] primaryText = null;
+    private TextMeshProUGUI[] _primaryText = null;
     [SerializeField]
-    private TextMeshProUGUI[] secondaryText = null;
+    private TextMeshProUGUI[] _secondaryText = null;
 
-    private bool bJustEnabled = false;
+    private bool _bJustEnabled = false;
 
     public bool IsOpen => gameObject.activeSelf;
 
-    private Vector3? _lastRayDirection = null;
-    private int _lastRaySelection = 0;
+    private UpdateContextLogic _updateContextLogic = null;
 
     private StringBuilder _rawInput = null;
     private StringBuilder _currentString = null;
 
     #region Mono Functions
 
-    void IConsoleHandler.OnAwake(ConsoleData a_data)
+    void IConsoleHandler.OnAwake(KDebug.ConsoleData a_data)
     {
         _inputField.characterLimit = a_data.MaxConsoleInput;
         _rawInput = new StringBuilder(a_data.MaxConsoleInput);
         _currentString = new StringBuilder(a_data.MaxConsoleInput);
+
+        _updateContextLogic = new UpdateContextLogic(_raycastLayers);
+        _updateContextLogic.OnContextSet += OnContextSet;
 
         CreatePredictionObject();
 
@@ -114,7 +116,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     {
         UpdatePredictionObjectOffset();
 
-        if (bJustEnabled)
+        if (_bJustEnabled)
         {
             OnPostEnable();
         }
@@ -149,7 +151,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         else if (Input.GetMouseButtonUp(0))
         {
             // Raycast
-            RaycastUpdateContext();
+            _updateContextLogic.UpdateContext();
         }
         else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
         {
@@ -195,15 +197,15 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
             SetPredictionText("Type a Command...");
         }
         KDebug.Console.DumpHistoryToHandler();
-        bJustEnabled = true;
+        _bJustEnabled = true;
     }
 
     private void OnDisable()
     {
-        while (_HistoryQueue.Count > 0)
+        while (_historyQueue.Count > 0)
         {
-            TextMeshProUGUI history = _HistoryQueue.Dequeue();
-            _HistoryItemPool.Push(history);
+            TextMeshProUGUI history = _historyQueue.Dequeue();
+            _historyItemPool.Push(history);
         }
     }
     #endregion
@@ -309,7 +311,7 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         _inputField.enabled = true;
         PointerEventData data = new PointerEventData(EventSystem.current);
         _inputField.OnPointerClick(data);
-        bJustEnabled = false;
+        _bJustEnabled = false;
     }
 
 
@@ -403,36 +405,36 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     public void OnVisualChange()
     {
-        for (int i = 0; i < primaryImages.Length; ++i)
+        for (int i = 0; i < _primaryImages.Length; ++i)
         {
-            Image img = primaryImages[i];
+            Image img = _primaryImages[i];
             if (img != null)
             {
                 img.color = KDebug.GetVisualData.PrimaryColor;
             }
         }
 
-        for (int i = 0; i < secondaryImages.Length; ++i)
+        for (int i = 0; i < _secondaryImages.Length; ++i)
         {
-            Image img = secondaryImages[i];
+            Image img = _secondaryImages[i];
             if (img != null)
             {
                 img.color = KDebug.GetVisualData.SecondaryColor;
             }
         }
 
-        for (int i = 0; i < primaryText.Length; ++i)
+        for (int i = 0; i < _primaryText.Length; ++i)
         {
-            TextMeshProUGUI text = primaryText[i];
+            TextMeshProUGUI text = _primaryText[i];
             if (text != null)
             {
                 text.color = KDebug.GetVisualData.PrimaryTextColor;
             }
         }
 
-        for (int i = 0; i < secondaryText.Length; ++i)
+        for (int i = 0; i < _secondaryText.Length; ++i)
         {
-            TextMeshProUGUI text = secondaryText[i];
+            TextMeshProUGUI text = _secondaryText[i];
             if (text != null)
             {
                 text.color = KDebug.GetVisualData.SecondaryTextColor;
@@ -447,9 +449,9 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         Color historyBackerColor = KDebug.GetVisualData.PrimaryColor;
         historyBackerColor.a = KDebug.GetVisualData.HistoryBackerAlpha;
 
-        if (_HistoryImageBacker != null)
+        if (_historyImageBacker != null)
         {
-            _HistoryImageBacker.color = historyBackerColor;
+            _historyImageBacker.color = historyBackerColor;
         }
     }
 
@@ -458,39 +460,39 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
         if (gameObject.activeSelf == false)
             return;
 
-        TextMeshProUGUI newHistory = _HistoryItemPool.Pop();
+        TextMeshProUGUI newHistory = _historyItemPool.Pop();
         newHistory.text = a_value;
-        newHistory.rectTransform.SetParent(_HistoryRect, false);
+        newHistory.rectTransform.SetParent(_historyRect, false);
         newHistory.canvasRenderer.cull = false;
 
         Vector2 values = newHistory.GetPreferredValues();
         float heightOffset = 0f;
-        if (values.y > _HistoryTemplate.rectTransform.rect.height)
+        if (values.y > _historyTemplate.rectTransform.rect.height)
         {
             newHistory.rectTransform.sizeDelta = new Vector2(newHistory.rectTransform.sizeDelta.x, values.y);
-            heightOffset = (values.y - _HistoryTemplate.rectTransform.rect.height) / 2;
+            heightOffset = (values.y - _historyTemplate.rectTransform.rect.height) / 2;
         }
-        newHistory.rectTransform.anchoredPosition = new Vector2(0, _HistoryTemplate.rectTransform.anchoredPosition.y + heightOffset);
+        newHistory.rectTransform.anchoredPosition = new Vector2(0, _historyTemplate.rectTransform.anchoredPosition.y + heightOffset);
 
-        if (_HistoryQueue.Count > 0)
+        if (_historyQueue.Count > 0)
         {
-            foreach (TextMeshProUGUI textMeshProUgui in _HistoryQueue)
+            foreach (TextMeshProUGUI textMeshProUgui in _historyQueue)
             {
-                float offset = Mathf.Max(_HistoryTemplate.rectTransform.rect.height, values.y);
+                float offset = Mathf.Max(_historyTemplate.rectTransform.rect.height, values.y);
                 textMeshProUgui.rectTransform.anchoredPosition = new Vector2(0f, textMeshProUgui.rectTransform.anchoredPosition.y + offset);
             }
 
-            TextMeshProUGUI oldestHistory = _HistoryQueue.Peek();
+            TextMeshProUGUI oldestHistory = _historyQueue.Peek();
 
-            if (oldestHistory.rectTransform.anchoredPosition.y + (oldestHistory.rectTransform.sizeDelta.y * 0.5f) > _HistoryRect.rect.height)
+            if (oldestHistory.rectTransform.anchoredPosition.y + (oldestHistory.rectTransform.sizeDelta.y * 0.5f) > _historyRect.rect.height)
             {
-                oldestHistory = _HistoryQueue.Dequeue();
+                oldestHistory = _historyQueue.Dequeue();
                 oldestHistory.canvasRenderer.cull = true;
-                oldestHistory.rectTransform.SetParent(_HistoryItemPoolRoot, false);
-                _HistoryItemPool.Push(oldestHistory);
+                oldestHistory.rectTransform.SetParent(_historyItemPoolRoot, false);
+                _historyItemPool.Push(oldestHistory);
             }
         }
-        _HistoryQueue.Enqueue(newHistory);
+        _historyQueue.Enqueue(newHistory);
     }
 
     #endregion
@@ -498,30 +500,30 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
     private void AwakeHistoryItemPool()
     {
         // Calculate Max Items
-        float height = _HistoryRect.rect.height;
-        float itemMinHeight = _HistoryTemplate.rectTransform.rect.height;
+        float height = _historyRect.rect.height;
+        float itemMinHeight = _historyTemplate.rectTransform.rect.height;
         float fMaxItems = height / itemMinHeight;
         int iMaxItems = Mathf.CeilToInt(fMaxItems);
 
         // Create Pool Root
         GameObject historyItemPool = new GameObject("OBJ_HistoryItemPool");
-        historyItemPool = GameObject.Instantiate(historyItemPool, _HistoryTemplate.transform.parent);
-        _HistoryItemPoolRoot = historyItemPool.transform;
-        _HistoryItemPoolRoot.SetAsLastSibling();
+        historyItemPool = GameObject.Instantiate(historyItemPool, _historyTemplate.transform.parent);
+        _historyItemPoolRoot = historyItemPool.transform;
+        _historyItemPoolRoot.SetAsLastSibling();
 
-        _HistoryItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
-        _HistoryQueue = new Queue<TextMeshProUGUI>(iMaxItems);
+        _historyItemPool = new Stack<TextMeshProUGUI>(iMaxItems);
+        _historyQueue = new Queue<TextMeshProUGUI>(iMaxItems);
 
         for (int i = 0; i < iMaxItems; ++i)
         {
-            TextMeshProUGUI textItem = Instantiate(_HistoryTemplate.gameObject,
+            TextMeshProUGUI textItem = Instantiate(_historyTemplate.gameObject,
                                                     historyItemPool.transform)
                                                     .GetComponent<TextMeshProUGUI>();
 
             Debug.Assert(textItem != null, "Failed to Clone Text Item");
             textItem.canvasRenderer.cull = true;
             textItem.gameObject.SetActive(true);
-            _HistoryItemPool.Push(textItem);
+            _historyItemPool.Push(textItem);
         }
     }
 
@@ -704,64 +706,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     #region Context Functions
 
-    private void RaycastUpdateContext()
-    {
-        RaycastHit[] hit = new RaycastHit[10];
-        Ray ray = ExampleStats.s_ActiveCam.ScreenPointToRay(Input.mousePosition);
-        
-        int hitCount = Physics.RaycastNonAlloc(ray, hit, 1000000, _RaycastLayers.value);
-
-        GameObject context = null;
-        if (hitCount > 0)
-        {
-            int selection = _lastRaySelection;
-
-            
-            if (_lastRayDirection != null)
-            {
-                float dot = Vector3.Dot(ray.direction, _lastRayDirection.Value);
-                if (dot > 0.998) // Same Direction - Cycle
-                {
-                    selection++;
-                    if (selection >= hitCount)
-                    {
-                        selection = 0;
-                    }
-
-                    if (hit[selection].transform == null) // Avoid Possible null Selection
-                    {
-                        selection = 0;
-                    }
-                }
-                else // New Direction - Reset
-                {
-                    selection = 0;
-                }
-            }
-
-            context = hit[selection].transform.gameObject;
-
-            _lastRayDirection = ray.direction;
-            _lastRaySelection = selection;
-
-        }
-        else
-        {
-            _lastRayDirection = null;
-            _lastRaySelection = 0;
-        }
-
-        if (KDebug.Console.CommandContext != null &&
-            context != null &&
-            KDebug.Console.CommandContext.GetInstanceID() == context.GetInstanceID())
-        {
-            return;
-        }
-
-        KDebug.Console.CommandContext = context;
-        OnContextSet(KDebug.Console.CommandContext);
-    }
-
     private void OnContextSet(GameObject a_object)
     {
         if (_contextText == null || a_object == null)
@@ -785,8 +729,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     private void FillPredictionItemsWithCommands(List<ICommand> a_commandList)
     {
-        int commandIdx = 0;
-
         int predictionItemsCount = _predictionItems.Count;
 
         // Best Size used for sizing of 
@@ -830,8 +772,6 @@ public class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
             item.Image.canvasRenderer.cull = false;
             item.Text.canvasRenderer.cull = false;
-            //item.gameObject.SetActive(true);
-
             _currentString.Clear();
         }
 

@@ -5,6 +5,7 @@
         public LogData Data;
         public readonly ICommand Command;
         public bool HasValue => string.IsNullOrEmpty(Data.Value) == false;
+
         public ConsoleHistory(string a_value, ICommand a_command)
         {
             Data = new LogData(a_value);
@@ -41,11 +42,14 @@
             s_MaxHistory = s_data.ConsoleData.MaxHistory;
         }
 
+        /// <summary>
+        /// Initialises the Console Handler
+        /// </summary>
         public void OnAwake()
         {
             s_Handler.OnAwake(s_data.ConsoleData);
 
-            if (s_Handler.IsOpen)
+            if (s_Handler.IsOpen) // Ensure Console is Closed
                 s_Handler.Close();
 
             s_Handler.OnVisualChange();
@@ -59,6 +63,9 @@
             }
         }
 
+        /// <summary>
+        /// Opens/Closes the Console
+        /// </summary>
         public void Toggle()
         {
             if (s_Handler.IsOpen)
@@ -71,6 +78,10 @@
             }
         }
 
+        /// <summary>
+        /// Writes Console History to History Queue
+        /// </summary>
+        /// <param name="a_history">History to Write</param>
         public void WriteToHistory(ConsoleHistory a_history)
         {
             if (s_ConsoleHistory.Count + 1 > s_MaxHistory)
@@ -91,6 +102,10 @@
             s_Handler.OnWriteToConsole(a_history.Data.PrintLog);
         }
 
+        /// <summary>
+        /// Loops through console history and calls OnWriteToConsole on handler with history,
+        /// called on opening the console.
+        /// </summary>
         public void DumpHistoryToHandler()
         {
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
