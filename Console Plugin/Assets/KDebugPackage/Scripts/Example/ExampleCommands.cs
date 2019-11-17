@@ -1,13 +1,18 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace KDebugPackage
+namespace KDebugPackage.Examples
 {
     using Console;
     using Log;
-    public partial class KDebug
+    public class ExampleCommands : MonoBehaviour
     {
-        private static class TestCommands
+        private void Start()
+        {
+            Commands.Register();
+        }
+
+        private static class Commands
         {
             private class SpawnCubeCommand : ICommand
             {
@@ -399,10 +404,8 @@ namespace KDebugPackage
                         final += a_args[i] + " ";
                     }
 
-                    LogData logData = new LogData(final);
-
-                    s_logFile.WriteLine(logData.PrintLog);
-                    return new CommandResult(logData.PrintLog);
+                    KDebug.Log(final);
+                    return new CommandResult(string.Empty);
                 }
             }
 

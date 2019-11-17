@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 using KDebugPackage;
 using KDebugPackage.DebugDisplay;
@@ -9,7 +8,6 @@ using KDebugPackage.DebugDisplay;
 /// Implementation of the Display Handler Interface
 /// Registered through the KDebugManager Initialisation Function.
 /// </summary>
-
 public class KDebugDisplayHandler : MonoBehaviour, IDisplayHandler
 {
     [SerializeField] 
@@ -134,7 +132,6 @@ public class KDebugDisplayHandler : MonoBehaviour, IDisplayHandler
         }
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ApplyVisualsToDisplay(IDebugDisplay a_display)
     {
         if (a_display == null) 

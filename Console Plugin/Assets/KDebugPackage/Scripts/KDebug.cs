@@ -42,8 +42,6 @@ namespace KDebugPackage
             s_displayManagerImpl = new DebugDisplayManagerImpl(a_data.DisplayData, a_displayHandler);
             s_displayManagerImpl.OnAwake();
 
-            TestCommands.Register();
-
             s_Tracker = a_tracker;
             s_Tracker.OnAwake();
             s_Initialised = true;
