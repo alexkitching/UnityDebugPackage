@@ -18,6 +18,7 @@ namespace KDebugPackage.Console
             _registeredCommands = new ICommand[a_maxCommands];
         }
 
+        // Registers a command to the console, name must be unique. 
         public bool RegisterCommand(ICommand a_command)
         {
             // Try Inserting Name to Tree

@@ -3,6 +3,7 @@
     using Data;
     using Log;
     using DataStructures.Containers;
+
     struct ConsoleHistory
     {
         public LogData Data;
@@ -35,7 +36,6 @@
         private readonly KQueue<ConsoleHistory> s_CommandHistory = null;
         private readonly int s_MaxHistory = 10;
 
-
         public ConsoleImpl(IConsoleHandler a_handler, ConsoleData a_data)
         {
             CommandLookup = new ConsoleCommandLookup(a_data.MaxCommands);
@@ -56,6 +56,7 @@
             if (s_Handler.IsOpen) // Ensure Console is Closed
                 s_Handler.Close();
 
+            // Apply Visual Scheme
             s_Handler.OnVisualChange();
         }
 
@@ -103,7 +104,11 @@
                 s_CommandHistory.Enqueue(a_history);
             }
 
-            s_Handler.OnWriteToConsole(a_history.Data.PrintLog);
+            // Write any result message to console.
+            if (string.IsNullOrEmpty(a_history.Data.PrintLog) == false)
+            {
+                s_Handler.OnWriteToConsole(a_history.Data.PrintLog);
+            }
         }
 
         /// <summary>

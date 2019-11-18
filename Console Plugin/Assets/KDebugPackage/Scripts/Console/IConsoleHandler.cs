@@ -1,5 +1,4 @@
-﻿
-namespace KDebugPackage.Console
+﻿namespace KDebugPackage.Console
 {
     public interface IConsoleHandler
     {

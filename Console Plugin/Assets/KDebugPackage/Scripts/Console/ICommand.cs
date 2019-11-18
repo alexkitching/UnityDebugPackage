@@ -2,6 +2,7 @@
 
 namespace KDebugPackage.Console
 {
+    // Command Interface
     public interface ICommand
     {
         string Name { get; }
@@ -12,6 +13,8 @@ namespace KDebugPackage.Console
 
     public struct CommandResult
     {
+        public string Result { get; }
+
         public CommandResult(string a_value)
         {
             Result = a_value;
@@ -28,7 +31,5 @@ namespace KDebugPackage.Console
         {
             return new CommandResult("<color=red>" + a_value);
         }
-
-        public string Result;
     }
 }

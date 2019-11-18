@@ -56,7 +56,6 @@ namespace KDebugPackage.Data
         };
     }
 
-
     [CreateAssetMenu(fileName = "PackageData", menuName = "KDebug/PackageData")]
     public class PackageData : ScriptableObject
     {

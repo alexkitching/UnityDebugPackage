@@ -63,13 +63,9 @@ namespace KDebugPackage.DebugDisplay
             _parent = null;
         }
 
-        public virtual void OnShow()
-        {
-        }
+        public virtual void OnShow() { }
 
-        public virtual void OnUpdate()
-        {
-        }
+        public virtual void OnUpdate() { }
 
         public abstract void OnGUI();
 

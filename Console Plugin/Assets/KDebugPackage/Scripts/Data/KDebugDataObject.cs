@@ -4,7 +4,8 @@ namespace KDebugPackage.Data
 {
     public class KDebugDataObject : MonoBehaviour
     {
-        [SerializeField] private PackageData _data = null;
+        [SerializeField]
+        private PackageData _data = null;
         public PackageData Data => _data;
 
         public void Awake()

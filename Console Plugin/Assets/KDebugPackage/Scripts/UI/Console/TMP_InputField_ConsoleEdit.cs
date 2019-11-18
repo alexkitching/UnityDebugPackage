@@ -1365,11 +1365,10 @@ namespace TMPro
         // TODO: Make LateUpdate a coroutine instead. Allows us to control the update to only be when the field is active.
         protected virtual void LateUpdate()
         {
-            if (m_IsModal && EventSystem.current.currentSelectedGameObject != gameObject)
+            if (m_IsModal && EventSystem.current?.currentSelectedGameObject != gameObject)
             {
-                EventSystem.current.SetSelectedGameObject(gameObject);
+                EventSystem.current?.SetSelectedGameObject(gameObject);
             }
-                
 
             // Only activate if we are not already activated.
             if (m_ShouldActivateNextUpdate)

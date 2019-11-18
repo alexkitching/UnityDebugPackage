@@ -53,7 +53,7 @@ public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     [Header("Context Object Raycast")]
     [SerializeField]
-    private LayerMask _raycastLayers;
+    private LayerMask _raycastLayers = new LayerMask();
 
     [SerializeField] 
     private RectTransform _contextRect = null;

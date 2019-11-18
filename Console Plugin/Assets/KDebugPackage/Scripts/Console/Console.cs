@@ -17,14 +17,7 @@ namespace KDebugPackage
             public static KeyCode ToggleOpenKeyCode =>
                 s_data != null ? s_data.ConsoleData.KeyCodeToggleOpen : KeyCode.None;
 
-            // Command Context
-            private static GameObject s_CommandContext = null;
-
-            public static GameObject CommandContext
-            {
-                get => s_CommandContext;
-                set => s_CommandContext = value;
-            }
+            public static GameObject CommandContext { get; set; } = null;
 
             #region Command Lookup/Registration
 
@@ -51,7 +44,6 @@ namespace KDebugPackage
             public static bool LookupBestMatches(string a_string, ref List<ICommand> a_list)
             {
                 return s_consoleImpl != null && s_consoleImpl.CommandLookup.LookupBestMatches(a_string, ref a_list);
-
             }
 
             #endregion
@@ -66,7 +58,7 @@ namespace KDebugPackage
 
                 if (s_consoleImpl.IsOpen == false)
                 {
-                    s_CommandContext = null;
+                    CommandContext = null;
                 }
             }
 
