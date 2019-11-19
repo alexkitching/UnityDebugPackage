@@ -4,7 +4,7 @@ using UnityEngine;
 namespace KDebugPackage
 {
     using Console;
-
+    using Log;
     public static partial class KDebug
     {
         // Implementation
@@ -77,12 +77,12 @@ namespace KDebugPackage
                 CommandResult result = a_command.Run(a_args);
 
                 // Print result
-                s_consoleImpl.WriteToHistory(new ConsoleHistory(result.Result, a_command));
+                s_consoleImpl.WriteToHistory(new LogData(LogType.Log, result.Result), a_command);
             }
 
             public static void WriteTo(string a_value)
             {
-                s_consoleImpl?.WriteToHistory(new ConsoleHistory(a_value, null));
+                s_consoleImpl?.WriteToHistory(new LogData(LogType.Log, a_value));
             }
 
             public static void DumpHistoryToHandler()

@@ -1,27 +1,11 @@
-﻿namespace KDebugPackage.Console
+﻿using System.Runtime.CompilerServices;
+using UnityEditor;
+
+namespace KDebugPackage.Console
 {
     using Data;
     using Log;
     using DataStructures.Containers;
-
-    struct ConsoleHistory
-    {
-        public LogData Data;
-        public readonly ICommand Command;
-        public bool HasValue => string.IsNullOrEmpty(Data.Value) == false;
-
-        public ConsoleHistory(string a_value, ICommand a_command)
-        {
-            Data = new LogData(a_value);
-            Command = a_command;
-        }
-
-        public ConsoleHistory(LogData a_data, ICommand a_command)
-        {
-            Data = a_data;
-            Command = a_command;
-        }
-    }
 
     class ConsoleImpl
     {
@@ -32,8 +16,8 @@
         public bool IsOpen => s_Handler?.IsOpen ?? false;
 
         // History
-        private readonly KQueue<ConsoleHistory> s_ConsoleHistory = null;
-        private readonly KQueue<ConsoleHistory> s_CommandHistory = null;
+        private readonly KQueue<LogData> s_ConsoleHistory = null;
+        private readonly KQueue<ICommand> s_CommandHistory = null;
         private readonly int s_MaxHistory = 10;
 
         public ConsoleImpl(IConsoleHandler a_handler, ConsoleData a_data)
@@ -41,8 +25,8 @@
             CommandLookup = new ConsoleCommandLookup(a_data.MaxCommands);
             s_Handler = a_handler;
 
-            s_ConsoleHistory = new KQueue<ConsoleHistory>(a_data.MaxHistory);
-            s_CommandHistory = new KQueue<ConsoleHistory>(a_data.MaxHistory);
+            s_ConsoleHistory = new KQueue<LogData>(a_data.MaxHistory);
+            s_CommandHistory = new KQueue<ICommand>(a_data.MaxHistory);
             s_MaxHistory = a_data.MaxHistory;
         }
 
@@ -87,27 +71,43 @@
         /// Writes Console History to History Queue
         /// </summary>
         /// <param name="a_history">History to Write</param>
-        public void WriteToHistory(ConsoleHistory a_history)
+        public void WriteToHistory(LogData a_data, ICommand a_command = null)
         {
-            if (s_ConsoleHistory.Count + 1 > s_MaxHistory)
+            if (a_data.HasValue)
             {
-                ConsoleHistory history = s_ConsoleHistory.Dequeue();
-                if (history.Command != null)
+                if (s_ConsoleHistory.Count + 1 > s_MaxHistory)
+                {
+                    s_ConsoleHistory.Dequeue();
+                }
+
+                s_ConsoleHistory.Enqueue(a_data);
+
+                s_Handler.OnWriteToConsole(FormatPrintLog(a_data));
+            }
+
+            if (a_command != null)
+            {
+                if (s_CommandHistory.Count + 1 > s_MaxHistory)
                 {
                     s_CommandHistory.Dequeue();
                 }
-            }
 
-            s_ConsoleHistory.Enqueue(a_history);
-            if (a_history.Command != null)
-            {
-                s_CommandHistory.Enqueue(a_history);
+                s_CommandHistory.Enqueue(a_command);
             }
+        }
 
-            // Write any result message to console.
-            if (string.IsNullOrEmpty(a_history.Data.PrintLog) == false)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static string FormatPrintLog(LogData a_data)
+        {
+            switch (a_data.Type)
             {
-                s_Handler.OnWriteToConsole(a_history.Data.PrintLog);
+                default:
+                    return "<color=white>" + a_data.PrintLog;
+                case LogType.Warning:
+                    return "<color=yellow>" + a_data.PrintLog;
+                case LogType.Error:
+                case LogType.Assertion:
+                    return "<color=red>" + a_data.PrintLog;
             }
         }
 
@@ -119,9 +119,9 @@
         {
             for (int i = 0; i < s_ConsoleHistory.Count; ++i)
             {
-                ConsoleHistory history = s_ConsoleHistory[i];
+                LogData history = s_ConsoleHistory[i];
                 if (history.HasValue)
-                    s_Handler.OnWriteToConsole(history.Data.PrintLog);
+                    s_Handler.OnWriteToConsole(FormatPrintLog(history));
             }
         }
     }

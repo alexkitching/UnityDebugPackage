@@ -24,19 +24,31 @@
           }
      }
 
+     enum LogType
+     {
+         Log,
+         Warning,
+         Error,
+         Assertion
+     }
+
      struct LogData
      {
-         private Timestamp timestamp;
-         public Timestamp GetTimestamp => timestamp;
-         private readonly string value;
-         public string Value => value;
+         public LogType Type { get; }
 
-         public string PrintLog => timestamp.ToString() + ": " + value;
+         private Timestamp _timestamp;
+         public Timestamp GetTimestamp => _timestamp;
+         public string Value { get; set; }
+         public bool HasValue => string.IsNullOrEmpty(Value) == false;
 
-         public LogData(string a_value)
+         public string PrintLog => _timestamp.ToString() + ": " + Value;
+
+         public LogData(LogType a_type, string a_value)
          {
-             timestamp = Timestamp.Now();
-             value = a_value;
+             Type = a_type;
+             _timestamp = Timestamp.Now();
+             Value = a_value;
          }
+
      }
 }
