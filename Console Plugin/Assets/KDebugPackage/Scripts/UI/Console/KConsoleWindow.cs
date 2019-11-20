@@ -118,66 +118,17 @@ public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
 
     void IConsoleHandler.OnUpdate()
     {
-        UpdatePredictionObjectOffset();
-
         if (_bJustEnabled)
         {
             OnPostEnable();
         }
 
-        if (Input.GetKeyDown(KeyCode.Tab))
-        {
-            string input = _inputField.text;
-            if (_currentInputLength <= 1)
-            {
-                if (_currentCommand != null && 
-                    _inputField.text.Length != _currentCommand.Name.Length)
-                {
-                    // Complete Command
-                    input += _predictionText.text;
-                }
-            }
-            
-            // Add Extra Spacing
-            input += ' ';
-            _inputField.SetTextWithoutNotify(input);
-            _inputField.caretPosition = input.Length;
-            OnInputStringChanged();
-        }
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
-        {
-            CyclePredictionItem(1);
-        }
-        else if (Input.GetKeyDown(KeyCode.DownArrow))
-        {
-            CyclePredictionItem(-1);
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            // Raycast
-            _updateContextLogic.UpdateContext();
-        }
-        else if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
-        {
-            string input = _inputField.text;
-            if (_currentInputLength <= 1 &&
-                _currentCommand != null &&
-                _inputField.text.Length != _currentCommand.Name.Length)
-            {
-                // Complete Command
-                input += _predictionText.text;
-                // Add Extra Spacing
-                input += ' ';
-                _inputField.SetTextWithoutNotify(input);
-                _inputField.caretPosition = input.Length;
-                OnInputStringChanged();
-            }
-            else
-            {
-                _inputField.ReleaseSelection();
-                _inputField.DeactivateInputField();
-            }
-        }
+        UpdatePredictionObjectOffset();
+    }
+
+    public void UpdateContext(Vector3 a_screenPos)
+    {
+        _updateContextLogic.UpdateContext(a_screenPos);
     }
 
     private void OnEnable()
@@ -405,6 +356,48 @@ public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
     {
         _inputField.SetTextWithoutNotify("");
         gameObject.SetActive(false);
+    }
+
+    public void Tab()
+    {
+        string input = _inputField.text;
+        if (_currentInputLength <= 1)
+        {
+            if (_currentCommand != null &&
+                _inputField.text.Length != _currentCommand.Name.Length)
+            {
+                // Complete Command
+                input += _predictionText.text;
+            }
+        }
+
+        // Add Extra Spacing
+        input += ' ';
+        _inputField.SetTextWithoutNotify(input);
+        _inputField.caretPosition = input.Length;
+        OnInputStringChanged();
+    }
+
+    public void Return()
+    {
+        string input = _inputField.text;
+        if (_currentInputLength <= 1 &&
+            _currentCommand != null &&
+            _inputField.text.Length != _currentCommand.Name.Length)
+        {
+            // Complete Command
+            input += _predictionText.text;
+            // Add Extra Spacing
+            input += ' ';
+            _inputField.SetTextWithoutNotify(input);
+            _inputField.caretPosition = input.Length;
+            OnInputStringChanged();
+        }
+        else
+        {
+            _inputField.ReleaseSelection();
+            _inputField.DeactivateInputField();
+        }
     }
 
     public void OnVisualChange()
@@ -786,7 +779,7 @@ public partial class KConsoleWindow : MonoBehaviour, IConsoleHandler
         }
     }
 
-    private void CyclePredictionItem(int a_dir)
+    public void CyclePredictionItem(int a_dir)
     {
         int newSelection = _selectedPredictionItem + a_dir;
 

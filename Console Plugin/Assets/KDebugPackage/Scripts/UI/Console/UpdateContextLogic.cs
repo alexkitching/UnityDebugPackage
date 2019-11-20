@@ -28,13 +28,13 @@ public partial class KConsoleWindow
             _raycastLayers = a_layerMask;
         }
 
-        public void UpdateContext()
+        public void UpdateContext(Vector3 a_screenPos)
         {
             if (Camera == null)
                 return; 
 
             RaycastHit[] hit = new RaycastHit[10];
-            Ray ray = Camera.ScreenPointToRay(Input.mousePosition);
+            Ray ray = Camera.ScreenPointToRay(a_screenPos);
 
             int hitCount = Physics.RaycastNonAlloc(ray, hit, _maxRayDist, _raycastLayers.value);
 
