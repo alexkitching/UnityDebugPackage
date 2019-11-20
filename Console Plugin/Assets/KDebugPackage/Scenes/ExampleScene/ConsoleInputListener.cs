@@ -10,16 +10,26 @@ public class ConsoleInputListener : MonoBehaviour
     {
         if (Input.GetKeyDown(KDebug.Console.ToggleOpenKeyCode))
         {
-            KDebug.Console.Toggle();
+            ToggleConsole();
         }
 
         if (Input.GetKeyDown(KeyCode.PageUp))
         {
-            KDebug.DisplayManager.CyclePrimaryTab(1);
+            CyclePrimaryTab(1);
         }
         else if (Input.GetKeyDown(KeyCode.PageDown))
         {
-            KDebug.DisplayManager.CyclePrimaryTab(-1);
+            CyclePrimaryTab(-1);
         }
+    }
+
+    public void ToggleConsole()
+    {
+        KDebug.Console.Toggle();
+    }
+
+    public void CyclePrimaryTab(int a_dir)
+    {
+        KDebug.DisplayManager.CyclePrimaryTab(a_dir);
     }
 }

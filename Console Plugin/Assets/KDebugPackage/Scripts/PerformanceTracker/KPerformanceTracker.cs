@@ -31,9 +31,9 @@ namespace KDebugPackage.Performance
 
         void IPerformanceTracker.OnAwake()
         {
-            Application.targetFrameRate = 300;
-
-            PerformanceDisplay performanceDisplay = new PerformanceDisplay(Color.blue, Color.red);
+            PerformanceDisplay performanceDisplay = 
+                new PerformanceDisplay(Color.blue,
+                        Color.red);
             KDebug.DisplayManager.RegisterDisplayAsPrimaryTab(performanceDisplay);
             KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<ExampleStatsDisplay>();
         }

@@ -72,7 +72,7 @@ namespace KDebugPackage
 #if UNITY_STANDALONE
             s_logFile = new KWinLog();
 #else
-        throw new NotImplementedException();
+            s_logFile = new KWinLog();
 #endif
 
             return s_logFile.Initialise(s_logFilePath);

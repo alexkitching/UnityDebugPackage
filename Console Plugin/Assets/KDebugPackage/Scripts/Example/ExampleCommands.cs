@@ -141,10 +141,11 @@ namespace KDebugPackage.Examples
                 {
                     if (a_args.Length >= ArgCount)
                     {
-                        float value = float.Parse(a_args[0]);
-                        ExampleStats.s_Health += value;
+                        if (float.TryParse(a_args[0], out float value))
+                        {
+                            ExampleStats.s_Health += value;
+                        }
                     }
-
                     return new CommandResult("Success");
                 }
             }

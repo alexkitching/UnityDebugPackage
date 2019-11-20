@@ -28,22 +28,22 @@ public class PerformanceDisplay : DebugDisplayBase
         GCIcon.Apply(false);
         LongFrameIcon.Apply(false);
 
-        _IconBacker = Backer;
-        _GCIcon = GCIcon;
-        _LongFrameIcon = LongFrameIcon;
+        _iconBacker = Backer;
+        _gcIcon = GCIcon;
+        _longFrameIcon = LongFrameIcon;
     }
 
-    private readonly Texture2D _IconBacker;
-    private readonly Texture2D _GCIcon;
-    private readonly Texture2D _LongFrameIcon;
-    private const int cShowForFrames = 10;
-    private int _GCFrameCounter = 0;
-    private int _LongFrameCounter = 0;
+    private readonly Texture2D _iconBacker;
+    private readonly Texture2D _gcIcon;
+    private readonly Texture2D _longFrameIcon;
+    private const int CShowForFrames = 10;
+    private int _gcFrameCounter = 0;
+    private int _longFrameCounter = 0;
 
-    private string FPSStringValue;
-    private string CPUStringValue;
-    private string CurrentMemoryValue;
-    private string CurrentHeapValue;
+    private string _fpsStringValue;
+    private string _cpuStringValue;
+    private string _currentMemoryValue;
+    private string _currentHeapValue;
 
     private float stringValueUpdateInterval = 0.5f;
     private float stringValueUpdateTime = 0f;
@@ -56,20 +56,19 @@ public class PerformanceDisplay : DebugDisplayBase
         UpdatePerformanceValues();
 
         if (KDebug.Tracker.WasGCCollected &&
-            _GCFrameCounter != cShowForFrames)
+            _gcFrameCounter != CShowForFrames)
         {
-            _GCFrameCounter = cShowForFrames;
-            KDebug.LogWarning("GCOccured!");
+            _gcFrameCounter = CShowForFrames;
         }
 
         if (KDebug.Tracker.WasLongFrame &&
-            _LongFrameCounter != cShowForFrames)
+            _longFrameCounter != CShowForFrames)
         {
-            _LongFrameCounter = cShowForFrames;
+            _longFrameCounter = CShowForFrames;
         }
 
-        _GCFrameCounter--;
-        _LongFrameCounter--;
+        _gcFrameCounter--;
+        _longFrameCounter--;
     }
 
     public override void OnGUI()
@@ -91,12 +90,12 @@ public class PerformanceDisplay : DebugDisplayBase
     {
         DrawIconBacking();
 
-        if (_GCFrameCounter > 0)
+        if (_gcFrameCounter > 0)
         {
             DrawGCIcon();
         }
 
-        if (_LongFrameCounter > 0)
+        if (_longFrameCounter > 0)
         {
             DrawLongFrameIcon();
         }
@@ -110,7 +109,7 @@ public class PerformanceDisplay : DebugDisplayBase
         float x = 10f;
         float y = GetVerticalOffset() + 0.5f * IconSize;
         GUI.DrawTexture(new Rect(x, y, IconSize, IconSize),
-                        _GCIcon);
+                        _gcIcon);
     }
 
     private void DrawLongFrameIcon()
@@ -118,7 +117,7 @@ public class PerformanceDisplay : DebugDisplayBase
         float x = IconSize + 10f;
         float y = GetVerticalOffset() + 0.5f * IconSize;
         GUI.DrawTexture(new Rect(x, y, IconSize, IconSize), 
-                        _LongFrameIcon);
+                        _longFrameIcon);
     }
 
     private void DrawIconBacking()
@@ -128,7 +127,7 @@ public class PerformanceDisplay : DebugDisplayBase
         float w = IconSize * 2 + 2f;
         float h = IconSize + 2f;
         GUI.DrawTexture(new Rect(x, y, w, h), 
-                        _IconBacker);
+                        _iconBacker);
     }
 
     private void UpdatePerformanceValues()
@@ -137,10 +136,10 @@ public class PerformanceDisplay : DebugDisplayBase
         stringValueUpdateTime -= Time.deltaTime;
         if (stringValueUpdateTime <= 0f)
         {
-            FPSStringValue = $"FPS: {KDebug.Tracker.GetFPS:0.00}";
-            CPUStringValue = $"CPU: {KDebug.Tracker.GetCPUms:0.00}ms";
-            CurrentMemoryValue = $"Current Memory: {KDebug.Tracker.GetCurrentMemory / 1000000} Mb";
-            CurrentHeapValue = $"Current Heap Size: {KDebug.Tracker.GetHeapSize / 1000000} Mb";
+            _fpsStringValue = $"FPS: {KDebug.Tracker.GetFPS:0.00}";
+            _cpuStringValue = $"CPU: {KDebug.Tracker.GetCPUms:0.00}ms";
+            _currentMemoryValue = $"Current Memory: {KDebug.Tracker.GetCurrentMemory / 1000000} Mb";
+            _currentHeapValue = $"Current Heap Size: {KDebug.Tracker.GetHeapSize / 1000000} Mb";
             stringValueUpdateTime = stringValueUpdateInterval;
         }
     }
@@ -148,9 +147,9 @@ public class PerformanceDisplay : DebugDisplayBase
     private void DrawPerformanceValues()
     {
         // Draw Text each frame
-        DrawText(FPSStringValue);
-        DrawText(CPUStringValue);
-        DrawText(CurrentMemoryValue);
-        DrawText(CurrentHeapValue);
+        DrawText(_fpsStringValue);
+        DrawText(_cpuStringValue);
+        DrawText(_currentMemoryValue);
+        DrawText(_currentHeapValue);
     }
 }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ConsoleData:
     MaxCommands: 100
-    MaxHistory: 10
+    MaxHistory: 50
     MaxConsoleInput: 128
     KeyCodeToggleOpen: 96
   DisplayData:
