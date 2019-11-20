@@ -142,7 +142,7 @@ namespace KDebugPackage.DataStructures.Containers
             if (_head > _tail &&
                 actualIndex > _head)
             {
-                actualIndex = actualIndex - _head;
+                return _elements[actualIndex - _head];
             }
 
             return _elements[actualIndex];
