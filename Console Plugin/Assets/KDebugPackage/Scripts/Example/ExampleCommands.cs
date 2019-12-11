@@ -212,6 +212,7 @@ namespace KDebugPackage.Examples
                             noclipObj = GameObject.Instantiate(playerTransform.gameObject);
                             noclipObj.AddComponent<NoclipCamera>();
                         }
+
                     }
                     else
                     {
@@ -416,6 +417,8 @@ namespace KDebugPackage.Examples
             {
                 if (bRegistered)
                     return;
+
+                
 
                 KDebug.Console.RegisterCommand(new SpawnCubeCommand());
                 KDebug.Console.RegisterCommand(new SpawnSphereCommand());

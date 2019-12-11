@@ -34,6 +34,9 @@ namespace KDebugPackage.Performance
             PerformanceDisplay performanceDisplay = 
                 new PerformanceDisplay(Color.blue,
                         Color.red);
+
+            KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<TutorialWindow>();
+
             KDebug.DisplayManager.RegisterDisplayAsPrimaryTab(performanceDisplay);
             KDebug.DisplayManager.RegisterDisplayAsPrimaryTab<ExampleStatsDisplay>();
         }
